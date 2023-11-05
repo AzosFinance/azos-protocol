@@ -8,6 +8,12 @@ abstract contract GoerliParams is Contracts, Params {
   uint256 constant OP_GOERLI_OP_ETH_PRICE_FEED = 0.001e18; // 1000 OP = 1 ETH
   uint256 constant OP_GOERLI_HAI_PRICE_DEVIATION = 0.995e18; // -0.5%
 
+  // --- Sepolia Params ---
+  uint256 constant SEPOLIA_BCT_ETH_PRICE_FEED = 0.0432e18; // 1 BCT = 0.0432 ETH
+  uint256 constant SEPOLIA_FGB_ETH_PRICE_FEED = 0.0054e17; // 1 FGB = 0.0054 ETH
+  uint256 constant SEPOLIA_REI_ETH_PRICE_FEED = 0.0189e17; // 1 REI = 0.0189 ETH
+  uint256 constant SEPOLIA_ZAI_BCT_PRICE_DEVIATION = 0.995e18; // 1 ZAI = 0.0001 BCT
+
   function _getEnvironmentParams() internal override {
     governor = 0xA6A772CCaa47eA3A6f267d31D782e8Ac5a5Ed743;
     delegate = 0x8125aAa8F7912aEb500553a5b1710BB16f7A6C65;

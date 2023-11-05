@@ -150,10 +150,10 @@ contract E2EDeploymentMainnetTest is DeployMainnet, CommonDeploymentTest {
 }
 
 contract E2EDeploymentGoerliTest is DeployGoerli, CommonDeploymentTest {
-  uint256 FORK_BLOCK = 10_000_000;
+  uint256 FORK_BLOCK = 4_632_682;
 
   function setUp() public override {
-    vm.createSelectFork(vm.rpcUrl('goerli'), FORK_BLOCK);
+    vm.createSelectFork(vm.rpcUrl('sepolia'), FORK_BLOCK);
     governor = address(69);
     super.setUp();
     run();

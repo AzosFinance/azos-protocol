@@ -102,67 +102,75 @@ contract DeployMainnet is MainnetParams, Deploy {
 
 contract DeployGoerli is GoerliParams, Deploy {
   function setUp() public virtual {
-    _deployerPk = uint256(vm.envBytes32('OP_GOERLI_DEPLOYER_PK'));
-    chainId = 420;
+    _deployerPk = uint256(vm.envBytes32('SEPOLIA_DEPLOYER_PK'));
+    chainId = 11_155_111;
   }
 
   function setupEnvironment() public virtual override updateParams {
     // Setup oracle feeds
 
     // HAI
-    systemCoinOracle = new HardcodedOracle('HAI / USD', HAI_INITIAL_PRICE); // 1 HAI = 1 USD
+    systemCoinOracle = new HardcodedOracle('ZAI / USD', HAI_INITIAL_PRICE); // 1 ZAI = 1 USD
 
-    // WETH
-    collateral[WETH] = IERC20Metadata(OP_WETH);
-    IBaseOracle _ethUSDPriceFeed =
-      chainlinkRelayerFactory.deployChainlinkRelayer(OP_GOERLI_CHAINLINK_ETH_USD_FEED, 1 hours); // live feed
+    bytes32 BCT = bytes32('BCT');
+    bytes32 FGB = bytes32('FGB');
+    bytes32 REI = bytes32('REI');
 
-    // OP
-    collateral[OP] = IERC20Metadata(OP_OPTIMISM);
-    HardcodedOracle _opETHPriceFeed = new HardcodedOracle('OP / ETH', OP_GOERLI_OP_ETH_PRICE_FEED); // denominated feed
-    IBaseOracle _opUSDPriceFeed = denominatedOracleFactory.deployDenominatedOracle({
-      _priceSource: _opETHPriceFeed,
-      _denominationPriceSource: _ethUSDPriceFeed,
+    // Test tokens
+    collateral[BCT] = new MintableERC20('Base Carbon Tonne', 'BCT', 18);
+    collateral[FGB] = new MintableERC20('Fungible Green Bond', 'FGB', 18);
+    collateral[REI] = new MintableERC20('Renewable Energy Index', 'REI', 18);
+
+    // ETH Live Price Feed
+    IBaseOracle _EthUSDPriceFeed =
+      chainlinkRelayerFactory.deployChainlinkRelayer(SEPOLIA_CHAINLINK_ETH_USD_FEED, 1 hours); // live feed
+
+    HardcodedOracle _BctEthPriceFeed = new HardcodedOracle('BCT / ETH', SEPOLIA_BCT_ETH_PRICE_FEED); // denominated feed
+
+    IBaseOracle _BctUsdPriceFeed = denominatedOracleFactory.deployDenominatedOracle({
+      _priceSource: _BctEthPriceFeed,
+      _denominationPriceSource: _EthUSDPriceFeed,
       _inverted: false
     });
 
-    // Test tokens
-    collateral[WBTC] = new MintableERC20('Wrapped BTC', 'wBTC', 8);
-    collateral[STONES] = new MintableERC20('Stones', 'STN', 3);
-    collateral[TOTEM] = new MintableERC20('Totem', 'TTM', 0);
-
-    // BTC: live feed
-    IBaseOracle _wbtcUsdOracle =
-      chainlinkRelayerFactory.deployChainlinkRelayer(OP_GOERLI_CHAINLINK_BTC_USD_FEED, 1 hours);
     // STN: denominated feed (1000 STN = 1 wBTC)
-    IBaseOracle _stonesWbtcOracle = new HardcodedOracle('STN / BTC', 0.001e18);
-    IBaseOracle _stonesOracle =
-      denominatedOracleFactory.deployDenominatedOracle(_stonesWbtcOracle, _wbtcUsdOracle, false);
-    // TTM: hardcoded feed (TTM price is 1)
-    IBaseOracle _totemOracle = new HardcodedOracle('TTM', 1e18);
+    IBaseOracle _fgbEthOracle = new HardcodedOracle('FGB / ETH', SEPOLIA_FGB_ETH_PRICE_FEED);
 
-    delayedOracle[WETH] = delayedOracleFactory.deployDelayedOracle(_ethUSDPriceFeed, 1 hours);
-    delayedOracle[OP] = delayedOracleFactory.deployDelayedOracle(_opUSDPriceFeed, 1 hours);
-    delayedOracle[WBTC] = delayedOracleFactory.deployDelayedOracle(_wbtcUsdOracle, 1 hours);
-    delayedOracle[STONES] = delayedOracleFactory.deployDelayedOracle(_stonesOracle, 1 hours);
-    delayedOracle[TOTEM] = delayedOracleFactory.deployDelayedOracle(_totemOracle, 1 hours);
+    IBaseOracle _fgbUsdOracle = denominatedOracleFactory.deployDenominatedOracle({
+      _priceSource: _fgbEthOracle,
+      _denominationPriceSource: _EthUSDPriceFeed,
+      _inverted: false
+    });
+
+    IBaseOracle _reiEthOracle = new HardcodedOracle('REI / ETH', SEPOLIA_REI_ETH_PRICE_FEED);
+
+    IBaseOracle _reiOracle = denominatedOracleFactory.deployDenominatedOracle({
+      _priceSource: _reiEthOracle,
+      _denominationPriceSource: _EthUSDPriceFeed,
+      _inverted: false
+    });
+
+    delayedOracle[WETH] = delayedOracleFactory.deployDelayedOracle(_EthUSDPriceFeed, 1 hours);
+    delayedOracle[BCT] = delayedOracleFactory.deployDelayedOracle(_BctUsdPriceFeed, 1 hours);
+    delayedOracle[FGB] = delayedOracleFactory.deployDelayedOracle(_fgbUsdOracle, 1 hours);
+    delayedOracle[REI] = delayedOracleFactory.deployDelayedOracle(_reiOracle, 1 hours);
 
     // Setup collateral types
-    collateralTypes.push(WETH);
-    collateralTypes.push(OP);
-    collateralTypes.push(WBTC);
-    collateralTypes.push(STONES);
-    collateralTypes.push(TOTEM);
+    collateralTypes.push(BCT);
+    collateralTypes.push(FGB);
+    collateralTypes.push(REI);
   }
 
   function setupPostEnvironment() public virtual override updateParams {
     // Setup deviated oracle
     systemCoinOracle = new DeviatedOracle({
-      _symbol: 'HAI/USD',
+      _symbol: 'ZAI/USD',
       _oracleRelayer: address(oracleRelayer),
-      _deviation: OP_GOERLI_HAI_PRICE_DEVIATION
+      _deviation: SEPOLIA_ZAI_BCT_PRICE_DEVIATION
     });
 
     oracleRelayer.modifyParameters('systemCoinOracle', abi.encode(systemCoinOracle));
   }
 }
+
+// forge script script/Deploy.s.sol:DeployGoerli -f sepolia --broadcast --verify
