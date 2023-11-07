@@ -8,14 +8,17 @@ import {ISAFEEngine} from '@interfaces/ISAFEEngine.sol';
 import {Authorizable, IAuthorizable} from '@contracts/utils/Authorizable.sol';
 
 contract StabilityModule is Authorizable {
-  // Errors
+  /////////////////////////
+  // Events And Errors   //
+  /////////////////////////
+
   error FailedDelegateCall();
   error NoAdapter();
   error FailedDeploy();
   error InvalidTrade();
   error InvalidBalance();
-
-  // Events
+  error InvalidFee();
+  error DebtCeiling();
 
   // Event logs adding a new adapter by authorized address
   event AddAdapter(bytes32 indexed adapterName, address indexed adapter, address indexed authorized);
@@ -25,18 +28,28 @@ contract StabilityModule is Authorizable {
   event WindDown(address indexed treasury, uint256 indexed amount, address indexed authorized);
   // Event logging change to max deposit
   event MaxDeposit(uint256 indexed maxDeposit);
+  // Event logging the debt ceiling
+  event DebtCeilingChange(uint256 indexed debtCeiling);
   // Event logging deposit
   event Deposit(uint256 indexed amount);
   // Event logging burning of any extra coins
   event BurnBalance(uint256 indexed amount);
   // Event logging the expansion of supply and debt
   event Expand(uint256 indexed amount, address indexed target, bytes returnData);
+  // Event logging the keeper fee
+  event KeeperFeePaid(uint256 indexed amount, address indexed keeper, address indexed token);
+  // Event for changing the keeper fee
+    event KeeperFee(uint256 indexed newFee);
   // Event logging change in debt and balance
   event DebtChange(
     int256 indexed previousDebt, int256 indexed newDebt, uint256 indexed previousBalance, uint256 newBalance
   );
 
-  // State
+  /////////////
+  // State   //
+  /////////////
+
+  uint256 constant BASIS_POINTS = 10_000;
 
   IERC20Metadata public authorizedCollateral;
   uint256 public scalingFactor;
@@ -47,8 +60,12 @@ contract StabilityModule is Authorizable {
   // Debt is scaled to the collateral decimals; IE the system coin debt will be scaled to the number of decimals in the
   // collateral token
   int256 private _debt;
+  uint256 public debtCeiling;
   uint256 private _deposits;
   uint256 public maxDeposit;
+
+  uint256 public basisFee;
+
   mapping(bytes32 adapterName => address adapterContract) private _adapters;
 
   constructor(
@@ -58,7 +75,9 @@ contract StabilityModule is Authorizable {
     address treasury_,
     address systemCoin_,
     address governance_,
-    uint256 maxDeposit_
+    uint256 maxDeposit_,
+    uint256 debtCeiling_,
+    uint256 basisFee_
   ) Authorizable(governance_) {
     if (
       authorizedCollateral_ == address(0) || adapter_ == address(0) || systemCoin_ == address(0)
@@ -72,11 +91,17 @@ contract StabilityModule is Authorizable {
     scalingFactor = systemCoin.decimals() - authorizedCollateral.decimals();
     treasury = treasury_;
     maxDeposit = maxDeposit_;
+    debtCeiling = debtCeiling_;
+    basisFee = basisFee_;
+    emit KeeperFee(basisFee_);
+    emit DebtCeilingChange(debtCeiling_);
     emit MaxDeposit(maxDeposit_);
     emit AddAdapter(adapterName_, adapter_, msg.sender);
   }
 
-  // Mutable functions
+  //////////////////////////
+  // Mutable functions    //
+  //////////////////////////
 
   // @notice Allows expanding system coin supply and executing delegate function calls on approved adapters
   // @param adapterName Name of the adapter
@@ -92,28 +117,31 @@ contract StabilityModule is Authorizable {
       burnBalance();
     }
 
-    int256 previousDebt = _debt;
-    uint256 previousBalance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
+    (int256 previousDebt, uint256 previousBalance, uint256 previousEquity) = _checkpoint();
 
-    uint256 previousEquity = previousBalance - uint256(previousDebt);
-
-    // We have to scale the system coin's debt to the decimal precision of the collateral token
+    // We have to scale the system coin's debt to the decimal precision of the collateral
     int256 newDebt = previousDebt + _scaleToDebt(mintAmount);
+    if (newDebt > int256(debtCeiling)) {
+      revert InvalidTrade();
+    }
     systemCoin.mint(address(this), mintAmount);
 
     (bool success, bytes memory returnData) = target.delegatecall(data);
     if (!success) {
-      revert FailedDelegateCall();
+      revert DebtCeiling();
     }
 
     uint256 newBalance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
     uint256 newEquity = newBalance - uint256(newDebt);
+    uint256 equityDelta = newEquity - previousEquity;
 
     if (newEquity < previousEquity) {
       revert InvalidTrade();
     }
 
     _debt = newDebt;
+
+    _payKeeper(equityDelta, address(authorizedCollateral));
 
     emit DebtChange(previousDebt, newDebt, previousBalance, newBalance);
     emit Expand(mintAmount, target, returnData);
@@ -130,8 +158,12 @@ contract StabilityModule is Authorizable {
     emit BurnBalance(balance);
   }
 
-  // Helper functions
+  /////////////////////////
+  // Helper functions    //
+  /////////////////////////
 
+  // @notice Scales debt to the collateral token's decimals
+  // @param amount Amount of debt to scale
   function _scaleToDebt(uint256 amount) internal view returns (int256) {
     if (scalingFactor == 0) {
       return int256(amount);
@@ -139,7 +171,27 @@ contract StabilityModule is Authorizable {
     return int256(amount / (10 ** scalingFactor));
   }
 
-  // Access Control Functions
+  // @notice Pay the function caller a keeper fee
+  // @param equityDelta Change in equity
+  // @param token Address of the token to pay the keeper fee in
+  function _payKeeper(uint256 equityDelta, address token) internal {
+    uint256 keeperFee = (equityDelta * basisFee) / BASIS_POINTS;
+    if (keeperFee > 0) {
+      IERC20Metadata(token).transfer(msg.sender, keeperFee);
+      emit KeeperFeePaid(keeperFee, msg.sender, token);
+    }
+  }
+
+  // @notice Checkpoints the contracts debt, balance of collateral and equity
+  function _checkpoint() internal view returns (int256 debt, uint256 balance, uint256 equity) {
+    debt = _debt;
+    balance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
+    equity = balance - uint256(debt);
+  }
+
+  /////////////////////////////////
+  // Access Control Functions    //
+  /////////////////////////////////
 
   // @notice Add an authorized adapter
   // @param adapterName_ Name of the adapter
@@ -168,6 +220,23 @@ contract StabilityModule is Authorizable {
   function changeMaxDeposit(uint256 newMaxDeposit) external isAuthorized {
     maxDeposit = newMaxDeposit;
     emit MaxDeposit(newMaxDeposit);
+  }
+
+  // @notice Change the debt ceiling
+  // @param newDebtCeiling New debt ceiling
+  function changeDebtCeiling(uint256 newDebtCeiling) external isAuthorized {
+    debtCeiling = newDebtCeiling;
+    emit DebtCeilingChange(newDebtCeiling);
+  }
+
+  // @notice Change the basis fee
+  // @param newBasisFee New basis fee
+  function changeBasisFee(uint256 newBasisFee) external isAuthorized {
+    if (newBasisFee > BASIS_POINTS) {
+      revert InvalidFee();
+    }
+    basisFee = newBasisFee;
+    emit KeeperFee(newBasisFee);
   }
 
   // View functions
