@@ -39,11 +39,13 @@ contract StabilityModule is Authorizable {
   // State
 
   IERC20Metadata public authorizedCollateral;
-  uint256 public collateralDecimals;
+  uint256 public scalingFactor;
 
   address treasury;
   ISystemCoin public systemCoin; // ZAI
 
+  // Debt is scaled to the collateral decimals; IE the system coin debt will be scaled to the number of decimals in the
+  // collateral token
   int256 private _debt;
   uint256 private _deposits;
   uint256 public maxDeposit;
@@ -66,8 +68,8 @@ contract StabilityModule is Authorizable {
     }
     _adapters[adapterName_] = adapter_;
     authorizedCollateral = IERC20Metadata(authorizedCollateral_);
-    collateralDecimals = authorizedCollateral.decimals();
     systemCoin = ISystemCoin(systemCoin_);
+    scalingFactor = systemCoin.decimals() - authorizedCollateral.decimals();
     treasury = treasury_;
     maxDeposit = maxDeposit_;
     emit MaxDeposit(maxDeposit_);
@@ -75,6 +77,11 @@ contract StabilityModule is Authorizable {
   }
 
   // Mutable functions
+
+  // @notice Allows expanding system coin supply and executing delegate function calls on approved adapters
+  // @param adapterName Name of the adapter
+  // @param data Data to be passed to the adapter
+  // @param mintAmount Amount of system coins to mint
   function expandAndBuy(bytes32 adapterName, bytes calldata data, uint256 mintAmount) public {
     address target = _adapters[adapterName];
     if (target == address(0)) {
@@ -90,7 +97,8 @@ contract StabilityModule is Authorizable {
 
     uint256 previousEquity = previousBalance - uint256(previousDebt);
 
-    int256 newDebt = previousDebt + int256(mintAmount);
+    // We have to scale the system coin's debt to the decimal precision of the collateral token
+    int256 newDebt = previousDebt + _scaleToDebt(mintAmount);
     systemCoin.mint(address(this), mintAmount);
 
     (bool success, bytes memory returnData) = target.delegatecall(data);
@@ -105,18 +113,30 @@ contract StabilityModule is Authorizable {
       revert InvalidTrade();
     }
 
+    _debt = newDebt;
+
     emit DebtChange(previousDebt, newDebt, previousBalance, newBalance);
     emit Expand(mintAmount, target, returnData);
   }
 
+  // @notice Burns any system coins from the stability module; and reduces it's debt by that amount
   function burnBalance() public {
     if (systemCoin.balanceOf(address(this)) == 0) {
       revert InvalidBalance();
     }
     uint256 balance = systemCoin.balanceOf(address(this));
     systemCoin.burn(balance);
-    _debt = _debt - int256(balance);
+    _debt = _debt - _scaleToDebt(balance);
     emit BurnBalance(balance);
+  }
+
+  // Helper functions
+
+  function _scaleToDebt(uint256 amount) internal view returns (int256) {
+    if (scalingFactor == 0) {
+      return int256(amount);
+    }
+    return int256(amount / (10 ** scalingFactor));
   }
 
   // Access Control Functions
