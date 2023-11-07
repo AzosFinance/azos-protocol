@@ -20,6 +20,7 @@ contract StabilityModule is Authorizable {
   error InvalidBalance();
   error InvalidFee();
   error InvalidDeposit();
+  error InvalidDebt();
   error DebtCeiling();
 
   // Event logs adding a new adapter by authorized address
@@ -27,7 +28,7 @@ contract StabilityModule is Authorizable {
   // Event logs changing the treasury address by authorized address
   event ChangeTreasury(address indexed newTreasury, address indexed authorized);
   // Event logging the winding down of a module
-  event WindDown(address indexed treasury, uint256 indexed amount, address indexed authorized);
+  event WindDown(address indexed treasury, uint256 indexed collateralAmount, uint256 coinAmount, address indexed authorized);
   // Event logging change to max deposit
   event MaxDeposit(uint256 indexed maxDeposit);
   // Event logging the debt ceiling
@@ -193,41 +194,9 @@ contract StabilityModule is Authorizable {
     emit Deposit(amount);
   }
 
-  // @notice Burns any system coins from the stability module; and reduces it's debt by that amount
-  function burnCoin(int256 currentDebt) public returns (int256 debt, uint256 coinBalance) {
-    coinBalance = systemCoin.balanceOf(address(this));
-    if (coinBalance == 0) {
-      _debt = currentDebt;
-      return (currentDebt, 0);
-    }
-
-    debt = currentDebt - _scaleFromSystemCoin(coinBalance);
-    systemCoin.burn(coinBalance);
-    _debt = debt;
-    emit BurnBalance(coinBalance);
-  }
-
   /////////////////////////
   // Helper functions    //
   /////////////////////////
-
-  // @notice Scales system coin to the collateral token's decimals
-  // @param amount Amount of system coin to scale
-  function _scaleFromSystemCoin(uint256 amount) internal view returns (int256) {
-    if (scalingFactor == 0) {
-      return int256(amount);
-    }
-    return int256(amount / (10 ** scalingFactor));
-  }
-
-  // @notice Scales collateral token to the system coin's decimals
-  // @param amount Amount of collateral to scale
-  function _scaleToSystemCoin(uint256 amount) internal view returns (uint256) {
-    if (scalingFactor == 0) {
-      return amount;
-    }
-    return amount * (10 ** scalingFactor);
-  }
 
   // @notice Pay the function caller a keeper fee
   // @param equityDelta Change in equity
@@ -240,13 +209,28 @@ contract StabilityModule is Authorizable {
     }
   }
 
+  // @notice Burns any system coins from the stability module; and reduces it's debt by that amount
+  // @param currentDebt Current debt of the module
+  function _burnCoin(int256 currentDebt) private returns (int256 debt, uint256 coinBalance) {
+    coinBalance = systemCoin.balanceOf(address(this));
+    if (coinBalance == 0) {
+      _debt = currentDebt;
+      return (currentDebt, 0);
+    }
+
+    debt = currentDebt - _scaleFromSystemCoin(coinBalance);
+    systemCoin.burn(coinBalance);
+    _debt = debt;
+    emit BurnBalance(coinBalance);
+  }
+
   // @notice Checkpoints the contracts debt, balance of collateral and equity
   function _checkpoint() internal view returns (int256 debt, uint256 collateralBalance, uint256 equity) {
     debt = _debt;
     collateralBalance = authorizedCollateral.balanceOf(address(this));
     uint256 coinBalance = systemCoin.balanceOf(address(this));
     if (debt > 0) {
-      equity = collateralBalance - uint256(_scaleFromSystemCoin(coinBalance)) - uint256(debt);
+      equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) - uint256(debt);
     } else {
       equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) + uint256(debt);
     }
@@ -260,7 +244,7 @@ contract StabilityModule is Authorizable {
     int256 debt
   ) internal returns (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burned) {
     newCollateral = authorizedCollateral.balanceOf(address(this));
-    (finalDebt, burned) = burnCoin(debt);
+    (finalDebt, burned) = _burnCoin(debt);
 
     // We have to account for the sign of our debt
     // If the debt is negative; that's a credit towards our equity
@@ -268,7 +252,7 @@ contract StabilityModule is Authorizable {
     if (finalDebt > 0) {
       newEquity = newCollateral - uint256(finalDebt);
     } else {
-      newEquity = newCollateral + uint256(finalDebt);
+      newEquity = newCollateral + abs(finalDebt);
     }
 
     if (newEquity <= previousEquity) {
@@ -299,9 +283,21 @@ contract StabilityModule is Authorizable {
 
   // @notice Wind down the module by transferring all collateral to the treasury
   function windDown() external isAuthorized {
-    uint256 balance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
-    IERC20Metadata(authorizedCollateral).transfer(treasury, balance);
-    emit WindDown(treasury, balance, msg.sender);
+    int256 debt = _debt;
+    uint256 credit;
+    if (debt > 0) {
+      revert InvalidDebt();
+    }
+
+    if (debt < 0) {
+      credit = abs(debt);
+      systemCoin.mint(treasury, credit);
+    }
+
+    uint256 balance = authorizedCollateral.balanceOf(address(this));
+    authorizedCollateral.transfer(treasury, balance);
+
+    emit WindDown(treasury, balance, credit, msg.sender);
   }
 
   // @notice Change the maximum total deposit threshold
@@ -328,7 +324,27 @@ contract StabilityModule is Authorizable {
     emit KeeperFee(newBasisFee);
   }
 
-  // View functions
+  /////////////////////////
+  // View functions      //
+  /////////////////////////
+
+  // @notice Scales system coin to the collateral token's decimals
+  // @param amount Amount of system coin to scale
+  function _scaleFromSystemCoin(uint256 amount) public view returns (int256) {
+    if (scalingFactor == 0) {
+      return int256(amount);
+    }
+    return int256(amount / (10 ** scalingFactor));
+  }
+
+  // @notice Scales collateral token to the system coin's decimals
+  // @param amount Amount of collateral to scale
+  function _scaleToSystemCoin(uint256 amount) public view returns (uint256) {
+    if (scalingFactor == 0) {
+      return amount;
+    }
+    return amount * (10 ** scalingFactor);
+  }
 
   // @notice Get the debt of the module
   function getDebt() external view returns (int256) {
@@ -343,5 +359,11 @@ contract StabilityModule is Authorizable {
   // @notice Get a specific adapter address
   function getAdapter(bytes32 adapterName_) external view returns (address) {
     return _adapters[adapterName_];
+  }
+
+  // @notice Return the absolute value of a signed integer as an unsigned integer
+  function abs(int256 x) internal pure returns (uint256) {
+    x >= 0 ? x : -x;
+    return uint256(x);
   }
 }
