@@ -15,9 +15,11 @@ contract StabilityModule is Authorizable {
   error FailedDelegateCall();
   error NoAdapter();
   error FailedDeploy();
+  error FailedTransfer();
   error InvalidTrade();
   error InvalidBalance();
   error InvalidFee();
+  error InvalidDeposit();
   error DebtCeiling();
 
   // Event logs adding a new adapter by authorized address
@@ -34,24 +36,34 @@ contract StabilityModule is Authorizable {
   event Deposit(uint256 indexed amount);
   // Event logging burning of any extra coins
   event BurnBalance(uint256 indexed amount);
-  // Event logging the expansion of supply and debt
-  event Expand(uint256 indexed amount, address indexed target, bytes returnData);
+  // Event logging the expansion of supply and return data from trade
+  event Expand(uint256 indexed amount, uint256 indexed burnAmount, address indexed target, bytes returnData);
+  // Event logging the contraction of supply and return data from trade
+  event Contract(uint256 indexed amount, uint256 indexed burnAmount, address indexed target, bytes returnData);
   // Event logging the keeper fee
   event KeeperFeePaid(uint256 indexed amount, address indexed keeper, address indexed token);
   // Event for changing the keeper fee
-    event KeeperFee(uint256 indexed newFee);
-  // Event logging change in debt and balance
-  event DebtChange(
+  event KeeperFee(uint256 indexed newFee);
+
+  // Event logging change in debt and balance during expansion
+  event ExpandDebt(
     int256 indexed previousDebt, int256 indexed newDebt, uint256 indexed previousBalance, uint256 newBalance
   );
+
+  // Event logging change in debt and balance during contraction
+  event ContractDebt(
+    int256 indexed previousDebt, int256 indexed newDebt, uint256 indexed previousBalance, uint256 newBalance
+  );
+
+  uint256 constant BASIS_POINTS = 10_000;
 
   /////////////
   // State   //
   /////////////
 
-  uint256 constant BASIS_POINTS = 10_000;
-
   IERC20Metadata public authorizedCollateral;
+  // To convert system coins to collateral we divide by 10 to the power of scaling factor
+  // To convert collateral to system coins we multiply by 10 to the power of scaling factor
   uint256 public scalingFactor;
 
   address treasury;
@@ -100,11 +112,11 @@ contract StabilityModule is Authorizable {
   }
 
   //////////////////////////
-  // Mutable functions    //
+  // Mutative functions   //
   //////////////////////////
 
   // @notice Allows expanding system coin supply and executing delegate function calls on approved adapters
-  // @param adapterName Name of the adapter
+  // @param adapterName Name of the adapter example: bytes32("Curve")
   // @param data Data to be passed to the adapter
   // @param mintAmount Amount of system coins to mint
   function expandAndBuy(bytes32 adapterName, bytes calldata data, uint256 mintAmount) public {
@@ -113,62 +125,108 @@ contract StabilityModule is Authorizable {
       revert NoAdapter();
     }
 
-    if (systemCoin.balanceOf(address(this)) > 0) {
-      burnBalance();
-    }
-
-    (int256 previousDebt, uint256 previousBalance, uint256 previousEquity) = _checkpoint();
+    (int256 previousDebt, uint256 previousCollateral, uint256 previousEquity) = _checkpoint();
 
     // We have to scale the system coin's debt to the decimal precision of the collateral
-    int256 newDebt = previousDebt + _scaleToDebt(mintAmount);
+    int256 newDebt = previousDebt + _scaleFromSystemCoin(mintAmount);
     if (newDebt > int256(debtCeiling)) {
-      revert InvalidTrade();
+      revert DebtCeiling();
     }
     systemCoin.mint(address(this), mintAmount);
 
     (bool success, bytes memory returnData) = target.delegatecall(data);
     if (!success) {
-      revert DebtCeiling();
+      revert FailedDelegateCall();
     }
 
-    uint256 newBalance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
-    uint256 newEquity = newBalance - uint256(newDebt);
-    uint256 equityDelta = newEquity - previousEquity;
-
-    if (newEquity < previousEquity) {
-      revert InvalidTrade();
-    }
-
-    _debt = newDebt;
+    (uint256 equityDelta, uint256 newCollateral, int256 finalDebt, uint256 burnAmount) =
+      _checkEquity(previousEquity, newDebt);
 
     _payKeeper(equityDelta, address(authorizedCollateral));
 
-    emit DebtChange(previousDebt, newDebt, previousBalance, newBalance);
-    emit Expand(mintAmount, target, returnData);
+    emit ExpandDebt(previousDebt, finalDebt, previousCollateral, newCollateral);
+    emit Expand(mintAmount, burnAmount, target, returnData);
+  }
+
+  // @notice Allows contracting the system coin supply and executing delegate function calls on approved adapters
+  // @param adapterName Name of the adapter
+  // @param data Data to be passed to the adapter
+  function contractAndSell(bytes32 adapterName, bytes calldata data) public {
+    address target = _adapters[adapterName];
+    if (target == address(0)) {
+      revert NoAdapter();
+    }
+
+    (int256 previousDebt, uint256 previousCollateral, uint256 previousEquity) = _checkpoint();
+
+    (bool success, bytes memory returnData) = target.delegatecall(data);
+    if (!success) {
+      revert FailedDelegateCall();
+    }
+
+    (uint256 equityDelta, uint256 newCollateral, int256 finalDebt, uint256 burnAmount) =
+      _checkEquity(previousEquity, previousDebt);
+
+    _payKeeper(equityDelta, address(systemCoin));
+
+    emit ContractDebt(previousDebt, finalDebt, previousCollateral, newCollateral);
+    emit Contract(0, burnAmount, target, returnData);
+  }
+
+  // @notice Allows user's to deposit approved collateral for system coins
+  // @param amount Amount of collateral to deposit
+  function deposit(uint256 amount) public {
+    uint256 previousDeposit = _deposits;
+    if (amount + previousDeposit > maxDeposit) {
+      revert InvalidDeposit();
+    }
+    _deposits = previousDeposit + amount;
+    bool success;
+    success = authorizedCollateral.transferFrom(msg.sender, address(this), amount);
+    if (!success) {
+      revert FailedTransfer();
+    }
+
+    _debt = _debt + int256(amount);
+    uint256 scaledAmount = _scaleToSystemCoin(amount);
+    systemCoin.mint(msg.sender, scaledAmount);
+    emit Deposit(amount);
   }
 
   // @notice Burns any system coins from the stability module; and reduces it's debt by that amount
-  function burnBalance() public {
-    if (systemCoin.balanceOf(address(this)) == 0) {
-      revert InvalidBalance();
+  function burnCoin(int256 currentDebt) public returns (int256 debt, uint256 coinBalance) {
+    coinBalance = systemCoin.balanceOf(address(this));
+    if (coinBalance == 0) {
+      _debt = currentDebt;
+      return (currentDebt, 0);
     }
-    uint256 balance = systemCoin.balanceOf(address(this));
-    systemCoin.burn(balance);
-    _debt = _debt - _scaleToDebt(balance);
-    emit BurnBalance(balance);
+
+    debt = currentDebt - _scaleFromSystemCoin(coinBalance);
+    systemCoin.burn(coinBalance);
+    _debt = debt;
+    emit BurnBalance(coinBalance);
   }
 
   /////////////////////////
   // Helper functions    //
   /////////////////////////
 
-  // @notice Scales debt to the collateral token's decimals
-  // @param amount Amount of debt to scale
-  function _scaleToDebt(uint256 amount) internal view returns (int256) {
+  // @notice Scales system coin to the collateral token's decimals
+  // @param amount Amount of system coin to scale
+  function _scaleFromSystemCoin(uint256 amount) internal view returns (int256) {
     if (scalingFactor == 0) {
       return int256(amount);
     }
     return int256(amount / (10 ** scalingFactor));
+  }
+
+  // @notice Scales collateral token to the system coin's decimals
+  // @param amount Amount of collateral to scale
+  function _scaleToSystemCoin(uint256 amount) internal view returns (uint256) {
+    if (scalingFactor == 0) {
+      return amount;
+    }
+    return amount * (10 ** scalingFactor);
   }
 
   // @notice Pay the function caller a keeper fee
@@ -183,10 +241,41 @@ contract StabilityModule is Authorizable {
   }
 
   // @notice Checkpoints the contracts debt, balance of collateral and equity
-  function _checkpoint() internal view returns (int256 debt, uint256 balance, uint256 equity) {
+  function _checkpoint() internal view returns (int256 debt, uint256 collateralBalance, uint256 equity) {
     debt = _debt;
-    balance = IERC20Metadata(authorizedCollateral).balanceOf(address(this));
-    equity = balance - uint256(debt);
+    collateralBalance = authorizedCollateral.balanceOf(address(this));
+    uint256 coinBalance = systemCoin.balanceOf(address(this));
+    if (debt > 0) {
+      equity = collateralBalance - uint256(_scaleFromSystemCoin(coinBalance)) - uint256(debt);
+    } else {
+      equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) + uint256(debt);
+    }
+  }
+
+  // @notice Check equity
+  // @param newDebt New debt balance
+  // @param previousEquity Previous equity
+  function _checkEquity(
+    uint256 previousEquity,
+    int256 debt
+  ) internal returns (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burned) {
+    newCollateral = authorizedCollateral.balanceOf(address(this));
+    (finalDebt, burned) = burnCoin(debt);
+
+    // We have to account for the sign of our debt
+    // If the debt is negative; that's a credit towards our equity
+    uint256 newEquity;
+    if (finalDebt > 0) {
+      newEquity = newCollateral - uint256(finalDebt);
+    } else {
+      newEquity = newCollateral + uint256(finalDebt);
+    }
+
+    if (newEquity <= previousEquity) {
+      revert InvalidTrade();
+    }
+
+    equityDelta = newEquity - previousEquity;
   }
 
   /////////////////////////////////
