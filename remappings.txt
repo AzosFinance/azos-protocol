@@ -7,3 +7,4 @@
 @libraries/=src/libraries/
 @script/=script/
 @test/=test/
+@src/=src/

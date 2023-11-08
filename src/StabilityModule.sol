@@ -28,7 +28,9 @@ contract StabilityModule is Authorizable {
   // Event logs changing the treasury address by authorized address
   event ChangeTreasury(address indexed newTreasury, address indexed authorized);
   // Event logging the winding down of a module
-  event WindDown(address indexed treasury, uint256 indexed collateralAmount, uint256 coinAmount, address indexed authorized);
+  event WindDown(
+    address indexed treasury, uint256 indexed collateralAmount, uint256 coinAmount, address indexed authorized
+  );
   // Event logging change to max deposit
   event MaxDeposit(uint256 indexed maxDeposit);
   // Event logging the debt ceiling
@@ -201,7 +203,7 @@ contract StabilityModule is Authorizable {
   // @notice Pay the function caller a keeper fee
   // @param equityDelta Change in equity
   // @param token Address of the token to pay the keeper fee in
-  function _payKeeper(uint256 equityDelta, address token) internal {
+  function _payKeeper(uint256 equityDelta, address token) private {
     uint256 keeperFee = (equityDelta * basisFee) / BASIS_POINTS;
     if (keeperFee > 0) {
       IERC20Metadata(token).transfer(msg.sender, keeperFee);
@@ -225,24 +227,24 @@ contract StabilityModule is Authorizable {
   }
 
   // @notice Checkpoints the contracts debt, balance of collateral and equity
-  function _checkpoint() internal view returns (int256 debt, uint256 collateralBalance, uint256 equity) {
+  function _checkpoint() private view returns (int256 debt, uint256 collateralBalance, uint256 equity) {
     debt = _debt;
     collateralBalance = authorizedCollateral.balanceOf(address(this));
     uint256 coinBalance = systemCoin.balanceOf(address(this));
     if (debt > 0) {
       equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) - uint256(debt);
     } else {
-      equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) + uint256(debt);
+      equity = collateralBalance + uint256(_scaleFromSystemCoin(coinBalance)) + abs(debt);
     }
   }
 
   // @notice Check equity
-  // @param newDebt New debt balance
   // @param previousEquity Previous equity
+  // @param newDebt Existing debt balance
   function _checkEquity(
     uint256 previousEquity,
     int256 debt
-  ) internal returns (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burned) {
+  ) private returns (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burned) {
     newCollateral = authorizedCollateral.balanceOf(address(this));
     (finalDebt, burned) = _burnCoin(debt);
 
@@ -357,6 +359,7 @@ contract StabilityModule is Authorizable {
   }
 
   // @notice Get a specific adapter address
+  // @param adapterName_ Name of the adapter
   function getAdapter(bytes32 adapterName_) external view returns (address) {
     return _adapters[adapterName_];
   }
