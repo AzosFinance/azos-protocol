@@ -5,14 +5,14 @@ import {Contracts} from '@script/Contracts.s.sol';
 
 import 'forge-std/Script.sol';
 import '@src/BasicActionsMock.sol';
-import {HaiProxy} from '@contracts/proxies/HaiProxy.sol';
+import {HaiProxy, IHaiProxy} from '@contracts/proxies/HaiProxy.sol';
 import {HaiProxyRegistry} from '@contracts/proxies/HaiProxyRegistry.sol';
 import {BasicActionsMock} from '@src/BasicActionsMock.sol';
 import {MintableERC20} from '@contracts/for-test/MintableERC20.sol';
 import {SystemCoin} from '@contracts/tokens/SystemCoin.sol';
 import {SAFEEngine} from '@contracts/SAFEEngine.sol';
 
-contract TestnetState is Script {
+contract TestnetStateNoProxy is Script {
 
   SAFEEngine public SAFEENGINE;
   MintableERC20 public BCT;
@@ -39,6 +39,7 @@ contract TestnetState is Script {
   string RPC_URL;
   address deployer;
   string public mnemonic;
+  uint256 public constant WALLETS = 10;
   address[] public publicKeys;
   uint256[] public privateKeys;
   HaiProxy[] public proxies;
@@ -56,7 +57,7 @@ contract TestnetState is Script {
   }
 
   function mintAllTokens() public {
-    for (uint256 i; i < publicKeys.length; i++) {
+    for (uint256 i = 0; i < WALLETS; i++) {
       uint256 userAmount = 10_000 * 1 ether * (i + 1);
       mintTokens(publicKeys[i], userAmount, address(BCT));
       mintTokens(publicKeys[i], userAmount, address(FGB));
@@ -65,15 +66,15 @@ contract TestnetState is Script {
   }
 
   function setApprovals() public {
-    for (uint256 i; i < publicKeys.length; i++) {
+    for (uint256 i = 0; i < WALLETS; i++) {
       vm.stopBroadcast();
       vm.startBroadcast(publicKeys[i]);
-      BCT.approve(address(proxies[i]), type(uint256).max);
-      FGB.approve(address(proxies[i]), type(uint256).max);
-      REI.approve(address(proxies[i]), type(uint256).max);
+      IHaiProxy userProxy = REGISTRY.proxies(publicKeys[i]);
+      BCT.approve(address(userProxy), type(uint256).max);
+      FGB.approve(address(userProxy), type(uint256).max);
+      REI.approve(address(userProxy), type(uint256).max);
     }
   }
-
   // note that the SafeIds from the GebSafeManager will correspond to the indices of the publicKeys array
   function openSafe(
     address owner,
@@ -99,7 +100,7 @@ contract TestnetState is Script {
   }
 
   function openAllSafes() public {
-    for (uint32 i = 0; i < publicKeys.length; i++) {
+    for (uint256 i = 0; i < WALLETS; i++) {
       uint256 userAmount = 10_000 * 1 ether * (i + 1);
       uint256 dollarAmountBct = userAmount * BCT_PRICE;
       uint256 dollarAmountFgb = userAmount * FGB_PRICE;
@@ -107,22 +108,23 @@ contract TestnetState is Script {
       uint256 bctDelta = dollarAmountBct / 10;
       uint256 fgbDelta = dollarAmountFgb / 10;
       uint256 reiDelta = dollarAmountRei / 10;
-      openSafe(publicKeys[i], proxies[i], userAmount, userAmount, BCTJOIN, bct);
-      openSafe(publicKeys[i], proxies[i], userAmount, userAmount / 2, FGBJOIN, fgb);
-      openSafe(publicKeys[i], proxies[i], userAmount, userAmount, REIJOIN, rei);
+      address userProxy = address(REGISTRY.proxies(publicKeys[i]));
+      openSafe(publicKeys[i], HaiProxy(userProxy), userAmount, userAmount, BCTJOIN, bct);
+      openSafe(publicKeys[i], HaiProxy(userProxy), userAmount, userAmount / 2, FGBJOIN, fgb);
+      openSafe(publicKeys[i], HaiProxy(userProxy), userAmount, userAmount, REIJOIN, rei);
     }
   }
 
   function deriveKeys() public {
-    for (uint32 i = 0; i < 10; i++) {
-      (address publicKey, uint256 privateKey) = deriveRememberKey(mnemonic, i);
+    for (uint256 i = 0; i < WALLETS; i++) {
+      (address publicKey, uint256 privateKey) = deriveRememberKey(mnemonic, uint32(i));
       publicKeys.push(publicKey);
       privateKeys.push(privateKey);
     }
   }
 
   function deployProxies() public {
-    for (uint32 i = 0; i < publicKeys.length; i++) {
+    for (uint256 i = 0; i < WALLETS; i++) {
       address userProxyAddress = deployProxy(publicKeys[i]);
       HaiProxy userProxy = HaiProxy(payable(userProxyAddress));
       proxies.push(userProxy);
@@ -153,11 +155,9 @@ contract TestnetState is Script {
     deriveKeys();
     vm.startBroadcast(deployer);
 
-    deployProxies();
     mintAllTokens();
-    setApprovals();
     openAllSafes();
   }
 
-  // forge script script/TestnetState.s.sol:TestnetState -f sepolia --broadcast -vvvvv
+  // forge script script/TestnetStateNoProxy.s.sol:TestnetStateNoProxy -f sepolia --broadcast -vvvvv
 }

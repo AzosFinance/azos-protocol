@@ -173,4 +173,4 @@ contract DeployGoerli is GoerliParams, Deploy {
   }
 }
 
-// forge script script/Deploy.s.sol:DeployGoerli -f sepolia --broadcast --verify
+// forge script script/Deploy.s.sol:DeployGoerli -f sepolia --broadcast --verify -vvvvv

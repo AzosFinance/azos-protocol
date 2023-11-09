@@ -15,8 +15,8 @@ abstract contract GoerliParams is Contracts, Params {
   uint256 constant SEPOLIA_ZAI_BCT_PRICE_DEVIATION = 0.995e18; // 1 ZAI = 0.0001 BCT
 
   function _getEnvironmentParams() internal override {
-    governor = 0xA6A772CCaa47eA3A6f267d31D782e8Ac5a5Ed743;
-    delegate = 0x8125aAa8F7912aEb500553a5b1710BB16f7A6C65;
+    governor = 0x9FFCe20171a5747b8cC0b3E07dF5Ec83Ce9f5C09;
+    delegate = 0x46a4aF716aC0590DC98db0F18F0A71222249721C;
 
     // Setup delegated collateral joins
     delegatee[OP] = governor;
