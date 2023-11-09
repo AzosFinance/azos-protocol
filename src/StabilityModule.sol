@@ -47,6 +47,8 @@ contract StabilityModule is Authorizable {
   event KeeperFeePaid(uint256 indexed amount, address indexed keeper, address indexed token);
   // Event for changing the keeper fee
   event KeeperFee(uint256 indexed newFee);
+  // Event for logging the authorized collateral address
+  event AuthorizedCollateral(address indexed authorizedCollateral);
 
   // Event logging change in debt and balance during expansion
   event ExpandDebt(
@@ -112,6 +114,7 @@ contract StabilityModule is Authorizable {
     emit DebtCeilingChange(debtCeiling_);
     emit MaxDeposit(maxDeposit_);
     emit AddAdapter(adapterName_, adapter_, msg.sender);
+    emit AuthorizedCollateral(authorizedCollateral_);
   }
 
   //////////////////////////
