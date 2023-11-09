@@ -8,3 +8,4 @@
 @script/=script/
 @test/=test/
 @src/=src/
+@router/=lib/v2-periphery/contracts/interfaces

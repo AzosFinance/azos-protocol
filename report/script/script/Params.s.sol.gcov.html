@@ -1,0 +1,200 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <title>LCOV - lcov.info - script/script/Params.s.sol</title>
+  <link rel="stylesheet" type="text/css" href="../../gcov.css">
+</head>
+
+<body>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="title">LCOV - code coverage report</td></tr>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+
+            <tr>
+              <td width="100%">
+                <table cellpadding=1 border=0 width="100%">
+          <tr>
+            <td width="10%" class="headerItem">Current view:</td>
+            <td width="10%" class="headerValue"><a href="../../index.html">top level</a> - <a href="index.html">script/script</a> - Params.s.sol<span style="font-size: 80%;"> (source / <a href="Params.s.sol.func-c.html">functions</a>)</span></td>
+            <td width="5%"></td>
+            <td width="5%"></td>
+            <td width="5%" class="headerCovTableHead">Coverage</td>
+            <td width="5%" class="headerCovTableHead" title="Covered + Uncovered code">Total</td>
+            <td width="5%" class="headerCovTableHead" title="Exercised code only">Hit</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test:</td>
+            <td class="headerValue">lcov.info</td>
+            <td></td>
+            <td class="headerItem">Lines:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">10</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td class="headerItem">Test Date:</td>
+            <td class="headerValue">2023-09-30 18:23:06</td>
+            <td></td>
+            <td class="headerItem">Functions:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">2</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+          <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td class="headerItem">Branches:</td>
+            <td class="headerCovTableEntryLo">0.0&nbsp;%</td>
+            <td class="headerCovTableEntry">8</td>
+            <td class="headerCovTableEntry">0</td>
+          </tr>
+                  <tr><td><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+                </table>
+              </td>
+            </tr>
+
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+          </table>
+
+          <table cellpadding=0 cellspacing=0 border=0>
+            <tr>
+              <td><br></td>
+            </tr>
+            <tr>
+              <td>
+<pre class="sourceHeading">             Branch data     Line data    Source code</pre>
+<pre class="source">
+<span id="L1"><span class="lineNum">       1</span>                 :             : // SPDX-License-Identifier: GPL-3.0</span>
+<span id="L2"><span class="lineNum">       2</span>                 :             : pragma solidity 0.8.19;</span>
+<span id="L3"><span class="lineNum">       3</span>                 :             : </span>
+<span id="L4"><span class="lineNum">       4</span>                 :             : import {Contracts} from '@script/Contracts.s.sol';</span>
+<span id="L5"><span class="lineNum">       5</span>                 :             : </span>
+<span id="L6"><span class="lineNum">       6</span>                 :             : import {</span>
+<span id="L7"><span class="lineNum">       7</span>                 :             :   IBaseOracle,</span>
+<span id="L8"><span class="lineNum">       8</span>                 :             :   IAccountingEngine,</span>
+<span id="L9"><span class="lineNum">       9</span>                 :             :   ICollateralAuctionHouse,</span>
+<span id="L10"><span class="lineNum">      10</span>                 :             :   IDebtAuctionHouse,</span>
+<span id="L11"><span class="lineNum">      11</span>                 :             :   ISurplusAuctionHouse,</span>
+<span id="L12"><span class="lineNum">      12</span>                 :             :   IOracleRelayer,</span>
+<span id="L13"><span class="lineNum">      13</span>                 :             :   ISAFEEngine,</span>
+<span id="L14"><span class="lineNum">      14</span>                 :             :   ILiquidationEngine,</span>
+<span id="L15"><span class="lineNum">      15</span>                 :             :   IStabilityFeeTreasury,</span>
+<span id="L16"><span class="lineNum">      16</span>                 :             :   IPIDController,</span>
+<span id="L17"><span class="lineNum">      17</span>                 :             :   IPIDRateSetter,</span>
+<span id="L18"><span class="lineNum">      18</span>                 :             :   ITaxCollector,</span>
+<span id="L19"><span class="lineNum">      19</span>                 :             :   IGlobalSettlement,</span>
+<span id="L20"><span class="lineNum">      20</span>                 :             :   IPostSettlementSurplusAuctionHouse,</span>
+<span id="L21"><span class="lineNum">      21</span>                 :             :   IModifiable</span>
+<span id="L22"><span class="lineNum">      22</span>                 :             : } from '@script/Contracts.s.sol';</span>
+<span id="L23"><span class="lineNum">      23</span>                 :             : </span>
+<span id="L24"><span class="lineNum">      24</span>                 :             : import {WAD, RAY, RAD} from '@libraries/Math.sol';</span>
+<span id="L25"><span class="lineNum">      25</span>                 :             : </span>
+<span id="L26"><span class="lineNum">      26</span>                 :             : // --- Utils ---</span>
+<span id="L27"><span class="lineNum">      27</span>                 :             : </span>
+<span id="L28"><span class="lineNum">      28</span>                 :             : // HAI Params</span>
+<span id="L29"><span class="lineNum">      29</span>                 :             : bytes32 constant HAI = bytes32('HAI'); // 0x4841490000000000000000000000000000000000000000000000000000000000</span>
+<span id="L30"><span class="lineNum">      30</span>                 :             : uint256 constant HAI_INITIAL_PRICE = 1e18; // 1 HAI = 1 USD</span>
+<span id="L31"><span class="lineNum">      31</span>                 :             : </span>
+<span id="L32"><span class="lineNum">      32</span>                 :             : // Collateral Names</span>
+<span id="L33"><span class="lineNum">      33</span>                 :             : bytes32 constant ETH_A = bytes32('ETH-A'); // 0x4554482d41000000000000000000000000000000000000000000000000000000</span>
+<span id="L34"><span class="lineNum">      34</span>                 :             : bytes32 constant WETH = bytes32('WETH'); // 0x5745544800000000000000000000000000000000000000000000000000000000</span>
+<span id="L35"><span class="lineNum">      35</span>                 :             : bytes32 constant WSTETH = bytes32('WSTETH'); // 0x5753544554480000000000000000000000000000000000000000000000000000</span>
+<span id="L36"><span class="lineNum">      36</span>                 :             : bytes32 constant OP = bytes32('OP'); // 0x4f50000000000000000000000000000000000000000000000000000000000000</span>
+<span id="L37"><span class="lineNum">      37</span>                 :             : bytes32 constant WBTC = bytes32('WBTC'); // 0x5742544300000000000000000000000000000000000000000000000000000000</span>
+<span id="L38"><span class="lineNum">      38</span>                 :             : bytes32 constant STONES = bytes32('STONES'); // 0x53544f4e45530000000000000000000000000000000000000000000000000000</span>
+<span id="L39"><span class="lineNum">      39</span>                 :             : bytes32 constant TOTEM = bytes32('TOTEM'); // 0x544f54454d000000000000000000000000000000000000000000000000000000</span>
+<span id="L40"><span class="lineNum">      40</span>                 :             : </span>
+<span id="L41"><span class="lineNum">      41</span>                 :             : uint256 constant MINUS_0_5_PERCENT_PER_HOUR = 999_998_607_628_240_588_157_433_861;</span>
+<span id="L42"><span class="lineNum">      42</span>                 :             : uint256 constant MINUS_1_PERCENT_PER_HOUR = 999_997_208_243_937_652_252_849_536;</span>
+<span id="L43"><span class="lineNum">      43</span>                 :             : uint256 constant HALF_LIFE_30_DAYS = 999_999_711_200_000_000_000_000_000;</span>
+<span id="L44"><span class="lineNum">      44</span>                 :             : </span>
+<span id="L45"><span class="lineNum">      45</span>                 :             : // NOTE: imported from https://etherscan.io/address/0x5CC4878eA3E6323FdA34b3D28551E1543DEe54C6</span>
+<span id="L46"><span class="lineNum">      46</span>                 :             : uint256 constant PROPORTIONAL_GAIN = 222_002_205_862;</span>
+<span id="L47"><span class="lineNum">      47</span>                 :             : uint256 constant INTEGRAL_GAIN = 16_442;</span>
+<span id="L48"><span class="lineNum">      48</span>                 :             : </span>
+<span id="L49"><span class="lineNum">      49</span>                 :             : // Job Params</span>
+<span id="L50"><span class="lineNum">      50</span>                 :             : uint256 constant JOB_REWARD = 5e18; // 5 HAI</span>
+<span id="L51"><span class="lineNum">      51</span>                 :             : </span>
+<span id="L52"><span class="lineNum">      52</span>                 :             : /**</span>
+<span id="L53"><span class="lineNum">      53</span>                 :             :  * @title Params</span>
+<span id="L54"><span class="lineNum">      54</span>                 :             :  * @notice This contract initializes all the contract parameters structs, so that they're inherited and available throughout scripts scopes.</span>
+<span id="L55"><span class="lineNum">      55</span>                 :             :  */</span>
+<span id="L56"><span class="lineNum">      56</span>                 :             : abstract contract Params {</span>
+<span id="L57"><span class="lineNum">      57</span>                 :             :   /**</span>
+<span id="L58"><span class="lineNum">      58</span>                 :             :    * @notice Initializes the parameters of the contracts, as many depend on the contracts addresses and need to be dynamically loaded.</span>
+<span id="L59"><span class="lineNum">      59</span>                 :             :    */</span>
+<span id="L60"><span class="lineNum">      60</span>                 :             :   function _getEnvironmentParams() internal virtual;</span>
+<span id="L61"><span class="lineNum">      61</span>                 :             : </span>
+<span id="L62"><span class="lineNum">      62</span>                 :             :   // --- Contracts params ---</span>
+<span id="L63"><span class="lineNum">      63</span>                 :             : </span>
+<span id="L64"><span class="lineNum">      64</span>                 :             :   ISAFEEngine.SAFEEngineParams _safeEngineParams;</span>
+<span id="L65"><span class="lineNum">      65</span>                 :             :   mapping(bytes32 =&gt; ISAFEEngine.SAFEEngineCollateralParams) _safeEngineCParams;</span>
+<span id="L66"><span class="lineNum">      66</span>                 :             : </span>
+<span id="L67"><span class="lineNum">      67</span>                 :             :   IOracleRelayer.OracleRelayerParams _oracleRelayerParams;</span>
+<span id="L68"><span class="lineNum">      68</span>                 :             :   mapping(bytes32 =&gt; IOracleRelayer.OracleRelayerCollateralParams) _oracleRelayerCParams;</span>
+<span id="L69"><span class="lineNum">      69</span>                 :             :   IPIDController.PIDControllerParams _pidControllerParams;</span>
+<span id="L70"><span class="lineNum">      70</span>                 :             :   IPIDController.ControllerGains _pidControllerGains;</span>
+<span id="L71"><span class="lineNum">      71</span>                 :             :   IPIDRateSetter.PIDRateSetterParams _pidRateSetterParams;</span>
+<span id="L72"><span class="lineNum">      72</span>                 :             : </span>
+<span id="L73"><span class="lineNum">      73</span>                 :             :   IAccountingEngine.AccountingEngineParams _accountingEngineParams;</span>
+<span id="L74"><span class="lineNum">      74</span>                 :             :   IDebtAuctionHouse.DebtAuctionHouseParams _debtAuctionHouseParams;</span>
+<span id="L75"><span class="lineNum">      75</span>                 :             :   ISurplusAuctionHouse.SurplusAuctionHouseParams _surplusAuctionHouseParams;</span>
+<span id="L76"><span class="lineNum">      76</span>                 :             :   ILiquidationEngine.LiquidationEngineParams _liquidationEngineParams;</span>
+<span id="L77"><span class="lineNum">      77</span>                 :             :   mapping(bytes32 =&gt; ILiquidationEngine.LiquidationEngineCollateralParams) _liquidationEngineCParams;</span>
+<span id="L78"><span class="lineNum">      78</span>                 :             :   mapping(bytes32 =&gt; ICollateralAuctionHouse.CollateralAuctionHouseParams) _collateralAuctionHouseParams;</span>
+<span id="L79"><span class="lineNum">      79</span>                 :             : </span>
+<span id="L80"><span class="lineNum">      80</span>                 :             :   IStabilityFeeTreasury.StabilityFeeTreasuryParams _stabilityFeeTreasuryParams;</span>
+<span id="L81"><span class="lineNum">      81</span>                 :             :   ITaxCollector.TaxCollectorParams _taxCollectorParams;</span>
+<span id="L82"><span class="lineNum">      82</span>                 :             :   mapping(bytes32 =&gt; ITaxCollector.TaxCollectorCollateralParams) _taxCollectorCParams;</span>
+<span id="L83"><span class="lineNum">      83</span>                 :             :   ITaxCollector.TaxReceiver _taxCollectorSecondaryTaxReceiver;</span>
+<span id="L84"><span class="lineNum">      84</span>                 :             : </span>
+<span id="L85"><span class="lineNum">      85</span>                 :             :   IGlobalSettlement.GlobalSettlementParams _globalSettlementParams;</span>
+<span id="L86"><span class="lineNum">      86</span>                 :             :   IPostSettlementSurplusAuctionHouse.PostSettlementSAHParams _postSettlementSAHParams;</span>
+<span id="L87"><span class="lineNum">      87</span>                 :             : }</span>
+<span id="L88"><span class="lineNum">      88</span>                 :             : </span>
+<span id="L89"><span class="lineNum">      89</span>                 :             : /**</span>
+<span id="L90"><span class="lineNum">      90</span>                 :             :  * @title ParamChecker</span>
+<span id="L91"><span class="lineNum">      91</span>                 :             :  * @notice This library sets the parameters of the contracts, one by one, ensuring that they're set fully and correctly.</span>
+<span id="L92"><span class="lineNum">      92</span>                 :             :  */</span>
+<span id="L93"><span class="lineNum">      93</span>                 :             : library ParamChecker {</span>
+<span id="L94"><span class="lineNum">      94</span>                 :             :   // --- Helper functions ---</span>
+<span id="L95"><span class="lineNum">      95</span>                 :             : </span>
+<span id="L96"><span class="lineNum">      96</span>                 :<span class="tlaUNC tlaBgUNC">           0 :   function _checkParams(address _modifiable, bytes memory _params) internal view {</span></span>
+<span id="L97"><span class="lineNum">      97</span>                 :<span class="tlaUNC">           0 :     bytes memory _callData = abi.encodeWithSignature('params()');</span></span>
+<span id="L98"><span class="lineNum">      98</span>                 :<span class="tlaUNC">           0 :     (, bytes memory _returnData) = _modifiable.staticcall(_callData);</span></span>
+<span id="L99"><span class="lineNum">      99</span>                 :             : </span>
+<span id="L100"><span class="lineNum">     100</span>                 :<span class="tlaUNC">           0 :     bytes memory _empty = new bytes(_params.length);</span></span>
+<span id="L101"><span class="lineNum">     101</span>                 :             : </span>
+<span id="L102"><span class="lineNum">     102</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaUNC" title="Branch 1 was not executed"> # </span>]:<span class="tlaUNC">           0 :     require(keccak256(_params) != keccak256(_empty), 'Empty params');</span></span>
+<span id="L103"><span class="lineNum">     103</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaUNC" title="Branch 1 was not executed"> # </span>]:<span class="tlaUNC">           0 :     require(keccak256(_params) == keccak256(_returnData), 'Incorrect params');</span></span>
+<span id="L104"><span class="lineNum">     104</span>                 :             :   }</span>
+<span id="L105"><span class="lineNum">     105</span>                 :             : </span>
+<span id="L106"><span class="lineNum">     106</span>                 :<span class="tlaUNC">           0 :   function _checkCParams(address _modifiable, bytes32 _cType, bytes memory _cParams) internal view {</span></span>
+<span id="L107"><span class="lineNum">     107</span>                 :<span class="tlaUNC">           0 :     bytes memory _callData = abi.encodeWithSignature('cParams(bytes32)', _cType);</span></span>
+<span id="L108"><span class="lineNum">     108</span>                 :<span class="tlaUNC">           0 :     (, bytes memory _returnData) = _modifiable.staticcall(_callData);</span></span>
+<span id="L109"><span class="lineNum">     109</span>                 :             : </span>
+<span id="L110"><span class="lineNum">     110</span>                 :<span class="tlaUNC">           0 :     bytes memory _empty = new bytes(_cParams.length);</span></span>
+<span id="L111"><span class="lineNum">     111</span>                 :             : </span>
+<span id="L112"><span class="lineNum">     112</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaUNC" title="Branch 1 was not executed"> # </span>]:<span class="tlaUNC">           0 :     require(keccak256(_cParams) != keccak256(_empty), 'Empty params');</span></span>
+<span id="L113"><span class="lineNum">     113</span>         [<span class="tlaUNC" title="Branch 0 was not executed"> # </span><span class="tlaUNC" title="Branch 1 was not executed"> # </span>]:<span class="tlaUNC">           0 :     require(keccak256(_cParams) == keccak256(_returnData), 'Incorrect params');</span></span>
+<span id="L114"><span class="lineNum">     114</span>                 :             :   }</span>
+<span id="L115"><span class="lineNum">     115</span>                 :             : }</span>
+        </pre>
+              </td>
+            </tr>
+          </table>
+          <br>
+
+          <table width="100%" border=0 cellspacing=0 cellpadding=0>
+            <tr><td class="ruler"><img src="../../glass.png" width=3 height=3 alt=""></td></tr>
+            <tr><td class="versionInfo">Generated by: <a href="https://github.com//linux-test-project/lcov" target="_parent">LCOV version 2.0-1</a></td></tr>
+          </table>
+          <br>
+
+</body>
+</html>
