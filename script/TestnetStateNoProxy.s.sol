@@ -13,7 +13,6 @@ import {SystemCoin} from '@contracts/tokens/SystemCoin.sol';
 import {SAFEEngine} from '@contracts/SAFEEngine.sol';
 
 contract TestnetStateNoProxy is Script {
-
   SAFEEngine public SAFEENGINE;
   MintableERC20 public BCT;
   MintableERC20 public FGB;
@@ -76,6 +75,7 @@ contract TestnetStateNoProxy is Script {
     }
   }
   // note that the SafeIds from the GebSafeManager will correspond to the indices of the publicKeys array
+
   function openSafe(
     address owner,
     HaiProxy proxy,
@@ -132,19 +132,19 @@ contract TestnetStateNoProxy is Script {
   }
 
   function setUp() public {
-  SAFEENGINE = SAFEEngine(vm.envAddress('SAFE_ENGINE'));
-  BCT = MintableERC20(vm.envAddress('BCT'));
-  FGB = MintableERC20(vm.envAddress('FGB'));
-  REI = MintableERC20(vm.envAddress('REI'));
-  REGISTRY = HaiProxyRegistry(vm.envAddress('HAI_PROXY_REGISTRY'));
-  COIN = SystemCoin(vm.envAddress('SYSTEM_COIN'));
-  BASICACTIONSMOCK = BasicActionsMock(vm.envAddress('BASIC_ACTIONS_MOCK'));
-  MANAGER = vm.envAddress('HAI_SAFE_MANAGER');
-  BCTJOIN = vm.envAddress('BCT_JOIN');
-  FGBJOIN = vm.envAddress('FGB_JOIN');
-  REIJOIN = vm.envAddress('REI_JOIN');
-  COINJOIN = vm.envAddress('COIN_JOIN');
-  TAXCOLLECTOR = vm.envAddress('TAX_COLLECTOR');
+    SAFEENGINE = SAFEEngine(vm.envAddress('SAFE_ENGINE'));
+    BCT = MintableERC20(vm.envAddress('BCT'));
+    FGB = MintableERC20(vm.envAddress('FGB'));
+    REI = MintableERC20(vm.envAddress('REI'));
+    REGISTRY = HaiProxyRegistry(vm.envAddress('HAI_PROXY_REGISTRY'));
+    COIN = SystemCoin(vm.envAddress('SYSTEM_COIN'));
+    BASICACTIONSMOCK = BasicActionsMock(vm.envAddress('BASIC_ACTIONS_MOCK'));
+    MANAGER = vm.envAddress('HAI_SAFE_MANAGER');
+    BCTJOIN = vm.envAddress('BCT_JOIN');
+    FGBJOIN = vm.envAddress('FGB_JOIN');
+    REIJOIN = vm.envAddress('REI_JOIN');
+    COINJOIN = vm.envAddress('COIN_JOIN');
+    TAXCOLLECTOR = vm.envAddress('TAX_COLLECTOR');
   }
 
   function run() public {

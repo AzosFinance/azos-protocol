@@ -94,7 +94,8 @@ contract StabilityModule is Authorizable {
     address governance_,
     uint256 maxDeposit_,
     uint256 debtCeiling_,
-    uint256 basisFee_
+    uint256 basisFee_,
+    address router
   ) Authorizable(governance_) {
     if (
       authorizedCollateral_ == address(0) || adapter_ == address(0) || systemCoin_ == address(0)
@@ -110,6 +111,8 @@ contract StabilityModule is Authorizable {
     maxDeposit = maxDeposit_;
     debtCeiling = debtCeiling_;
     basisFee = basisFee_;
+    systemCoin.approve(router, type(uint256).max);
+    authorizedCollateral.approve(router, type(uint256).max);
     emit KeeperFee(basisFee_);
     emit DebtCeilingChange(debtCeiling_);
     emit MaxDeposit(maxDeposit_);
@@ -145,12 +148,13 @@ contract StabilityModule is Authorizable {
       revert FailedDelegateCall();
     }
 
-    (uint256 equityDelta, uint256 newCollateral, int256 finalDebt, uint256 burnAmount) =
+    (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burnAmount) =
       _checkEquity(previousEquity, newDebt);
 
-    _payKeeper(equityDelta, address(authorizedCollateral));
+    uint256 keeperFee = _payKeeper(equityDelta, address(authorizedCollateral));
+    uint256 currentCollateral = newCollateral - keeperFee;
 
-    emit ExpandDebt(previousDebt, finalDebt, previousCollateral, newCollateral);
+    emit ExpandDebt(previousDebt, finalDebt, previousCollateral, currentCollateral);
     emit Expand(mintAmount, burnAmount, target, returnData);
   }
 
@@ -170,12 +174,13 @@ contract StabilityModule is Authorizable {
       revert FailedDelegateCall();
     }
 
-    (uint256 equityDelta, uint256 newCollateral, int256 finalDebt, uint256 burnAmount) =
+    (uint256 newCollateral, uint256 equityDelta, int256 finalDebt, uint256 burnAmount) =
       _checkEquity(previousEquity, previousDebt);
 
-    _payKeeper(equityDelta, address(systemCoin));
+    uint256 keeperFee = _payKeeper(equityDelta, address(systemCoin));
+    uint256 currentCollateral = newCollateral - keeperFee;
 
-    emit ContractDebt(previousDebt, finalDebt, previousCollateral, newCollateral);
+    emit ContractDebt(previousDebt, finalDebt, previousCollateral, currentCollateral);
     emit Contract(0, burnAmount, target, returnData);
   }
 
@@ -206,8 +211,8 @@ contract StabilityModule is Authorizable {
   // @notice Pay the function caller a keeper fee
   // @param equityDelta Change in equity
   // @param token Address of the token to pay the keeper fee in
-  function _payKeeper(uint256 equityDelta, address token) private {
-    uint256 keeperFee = (equityDelta * basisFee) / BASIS_POINTS;
+  function _payKeeper(uint256 equityDelta, address token) private returns (uint256 keeperFee) {
+    keeperFee = (equityDelta * basisFee) / BASIS_POINTS;
     if (keeperFee > 0) {
       IERC20Metadata(token).transfer(msg.sender, keeperFee);
       emit KeeperFeePaid(keeperFee, msg.sender, token);
