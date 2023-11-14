@@ -5,12 +5,10 @@ import {Script, console2} from 'forge-std/Script.sol';
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 import {MintableERC20} from '@contracts/for-test/MintableERC20.sol';
 import {IUniswapV2Router02} from '@router/IUniswapV2Router02.sol';
-import {StabilityModule} from '@src/StabilityModule.sol';
 
 contract UniswapPoker is Script {
   ISystemCoin public systemCoin;
   IUniswapV2Router02 public uniswapV2Router02;
-  StabilityModule public stabilityModule;
   address public deployer;
   uint256 public _deployerPk;
   MintableERC20 public usdc;
@@ -27,7 +25,6 @@ contract UniswapPoker is Script {
     systemCoin = ISystemCoin(vm.envAddress('SYSTEM_COIN'));
     uniswapV2Router02 = IUniswapV2Router02(vm.envAddress('UNISWAP_V2_ROUTER_02'));
     usdc = MintableERC20(vm.envAddress('USDC'));
-    stabilityModule = StabilityModule(vm.envAddress('STABILITY_MODULE'));
 
     usdcZaiPath.push(address(usdc));
     usdcZaiPath.push(address(systemCoin));
@@ -36,15 +33,13 @@ contract UniswapPoker is Script {
 
     usdc.mint(deployer, 1_000_000 ether);
 
-    usdc.approve(address(stabilityModule), 500_000 ether);
-
     usdc.approve(address(uniswapV2Router02), 500_000 ether);
     systemCoin.approve(address(uniswapV2Router02), 500_000 ether);
 
     console2.logUint(systemCoin.balanceOf(deployer));
 
     uniswapV2Router02.swapExactTokensForTokens(
-      100_000 ether, 89_000 ether, zaiUsdcPath, deployer, block.timestamp + 1 days
+      10_000 ether, 8_000 ether, zaiUsdcPath, deployer, block.timestamp + 1 days
     );
 
     vm.stopBroadcast();
