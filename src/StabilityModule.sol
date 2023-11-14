@@ -1,6 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.19;
 
+// #todo the debt events should be the same in the expansion and contraction functions
+// #todo the router address should not be arbitrary and injected by the user
+// #todo we could have a withdraw feature that enables users to extract collateral tokens and pay a fee
+// #todo run basic security tooling on the contract; slither, mythril, etc
+// #todo end to end unit testing coverage
+// #todo configure fuzz testing and write stateless fuzz testing
+// #todo configure and write stateful invariant tests
+
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 import {IERC20Metadata} from '@openzeppelin/token/ERC20/extensions/IERC20Metadata.sol';
 
@@ -36,7 +44,7 @@ contract StabilityModule is Authorizable {
   // Event logging the debt ceiling
   event DebtCeilingChange(uint256 indexed debtCeiling);
   // Event logging deposit
-  event Deposit(uint256 indexed amount);
+  event Deposit(uint256 indexed amount, uint256 scaledAmount, int256 indexed finalDebt, uint256 indexed collateralBalance);
   // Event logging burning of any extra coins
   event BurnBalance(uint256 indexed amount);
   // Event logging the expansion of supply and return data from trade
@@ -198,10 +206,12 @@ contract StabilityModule is Authorizable {
       revert FailedTransfer();
     }
 
-    _debt = _debt + int256(amount);
+    uint256 collateralBalance = authorizedCollateral.balanceOf(address(this));
+    int256 finalDebt = _debt + int256(amount);
+    _debt = finalDebt;
     uint256 scaledAmount = _scaleToSystemCoin(amount);
     systemCoin.mint(msg.sender, scaledAmount);
-    emit Deposit(amount);
+    emit Deposit(amount, scaledAmount, finalDebt, collateralBalance);
   }
 
   /////////////////////////
