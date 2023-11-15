@@ -4,6 +4,16 @@ Azos is a modified fork of the upcoming HAI stablecoin protocol which will soon 
 
 This repository contains the core smart contract code for HAI, a GEB fork. GEB is the abbreviation of [Gödel, Escher and Bach](https://en.wikipedia.org/wiki/G%C3%B6del,_Escher,_Bach) as well as the name of an [Egyptian god](https://en.wikipedia.org/wiki/Geb).
 
+# Instructions
+
+- [Install Foundry](https://book.getfoundry.sh/getting-started/installation)
+- `yarn install`
+- `forge install`
+- `forge compile`
+- Create a new file named `.env` and copy the contents of `env.example` into it
+- Configure your `.env` file's missing environment variables
+- All of the commands to execute scripts live as comments at the bottom of each script contract
+
 # Additions
 
 The following files were written from scratch during the Hackathon:
