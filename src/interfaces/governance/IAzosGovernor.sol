@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-interface IHaiGovernor {
-  struct HaiGovernorParams {
+interface IAzosGovernor {
+  struct AzosGovernorParams {
     uint48 votingDelay;
     uint32 votingPeriod;
     uint48 quorumVoteExtension;

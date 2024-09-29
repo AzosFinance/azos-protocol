@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiSafeManager} from '@contracts/proxies/HaiSafeManager.sol';
-import {HaiProxy} from '@contracts/proxies/HaiProxy.sol';
+import {AzosSafeManager} from '@contracts/proxies/AzosSafeManager.sol';
+import {AzosProxy} from '@contracts/proxies/AzosProxy.sol';
 
 import {ISAFEEngine} from '@interfaces/ISAFEEngine.sol';
 import {ICoinJoin} from '@interfaces/utils/ICoinJoin.sol';
@@ -98,8 +98,8 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _safeId,
     uint256 _deltaWad
   ) internal {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     // Generates debt in the SAFE
@@ -125,8 +125,8 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _safeId,
     uint256 _deltaWad
   ) internal {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     // Joins COIN amount into the safeEngine
@@ -138,30 +138,30 @@ contract BasicActions is CommonActions, IBasicActions {
     );
   }
 
-  /// @notice Routes the openSAFE call to the HaiSafeManager contract
+  /// @notice Routes the openSAFE call to the AzosSafeManager contract
   function _openSAFE(address _manager, bytes32 _cType, address _usr) internal returns (uint256 _safeId) {
-    _safeId = HaiSafeManager(_manager).openSAFE(_cType, _usr);
+    _safeId = AzosSafeManager(_manager).openSAFE(_cType, _usr);
   }
 
-  /// @notice Routes the transferCollateral call to the HaiSafeManager contract
+  /// @notice Routes the transferCollateral call to the AzosSafeManager contract
   function _transferCollateral(address _manager, uint256 _safeId, address _dst, uint256 _deltaWad) internal {
     if (_deltaWad == 0) return;
-    HaiSafeManager(_manager).transferCollateral(_safeId, _dst, _deltaWad);
+    AzosSafeManager(_manager).transferCollateral(_safeId, _dst, _deltaWad);
   }
 
-  /// @notice Routes the transferInternalCoins call to the HaiSafeManager contract
+  /// @notice Routes the transferInternalCoins call to the AzosSafeManager contract
   function _transferInternalCoins(address _manager, uint256 _safeId, address _dst, uint256 _rad) internal {
-    HaiSafeManager(_manager).transferInternalCoins(_safeId, _dst, _rad);
+    AzosSafeManager(_manager).transferInternalCoins(_safeId, _dst, _rad);
   }
 
-  /// @notice Routes the modifySAFECollateralization call to the HaiSafeManager contract
+  /// @notice Routes the modifySAFECollateralization call to the AzosSafeManager contract
   function _modifySAFECollateralization(
     address _manager,
     uint256 _safeId,
     int256 _deltaCollateral,
     int256 _deltaDebt
   ) internal {
-    HaiSafeManager(_manager).modifySAFECollateralization(_safeId, _deltaCollateral, _deltaDebt);
+    AzosSafeManager(_manager).modifySAFECollateralization(_safeId, _deltaCollateral, _deltaDebt);
   }
 
   /**
@@ -176,8 +176,8 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _collateralAmount,
     uint256 _deltaWad
   ) internal {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     // Takes token amount from user's wallet and joins into the safeEngine
@@ -256,7 +256,7 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _safeId,
     uint256 _deltaWad
   ) external onlyDelegateCall {
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
 
     // Takes token amount from user's wallet and joins into the safeEngine
     _joinCollateral(_collateralJoin, _safeInfo.safeHandler, _deltaWad);
@@ -285,8 +285,8 @@ contract BasicActions is CommonActions, IBasicActions {
     address _coinJoin,
     uint256 _safeId
   ) external onlyDelegateCall {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     ISAFEEngine.SAFE memory _safeData = ISAFEEngine(_safeEngine).safes(_safeInfo.collateralType, _safeInfo.safeHandler);
@@ -351,8 +351,8 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _collateralWad,
     uint256 _debtWad
   ) external onlyDelegateCall {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     // Joins COIN amount into the safeEngine
@@ -379,8 +379,8 @@ contract BasicActions is CommonActions, IBasicActions {
     uint256 _safeId,
     uint256 _collateralWad
   ) external onlyDelegateCall {
-    address _safeEngine = HaiSafeManager(_manager).safeEngine();
-    HaiSafeManager.SAFEData memory _safeInfo = HaiSafeManager(_manager).safeData(_safeId);
+    address _safeEngine = AzosSafeManager(_manager).safeEngine();
+    AzosSafeManager.SAFEData memory _safeInfo = AzosSafeManager(_manager).safeData(_safeId);
     ITaxCollector(_taxCollector).taxSingle(_safeInfo.collateralType);
 
     ISAFEEngine.SAFE memory _safeData = ISAFEEngine(_safeEngine).safes(_safeInfo.collateralType, _safeInfo.safeHandler);

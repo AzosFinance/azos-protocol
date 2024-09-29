@@ -8,14 +8,14 @@ import {ICommonSurplusAuctionHouse} from '@interfaces/ICommonSurplusAuctionHouse
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IDisableable} from '@interfaces/utils/IDisableable.sol';
 import {IModifiable} from '@interfaces/utils/IModifiable.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
 import {Assertions} from '@libraries/Assertions.sol';
 import {Math} from '@libraries/Math.sol';
 
 import {DummySAFEEngine} from '@test/mocks/SAFEEngineForTest.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = newAddress();

@@ -6,13 +6,13 @@ import {ISAFEEngine} from '@interfaces/ISAFEEngine.sol';
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IDisableable} from '@interfaces/utils/IDisableable.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {RAY} from '@libraries/Math.sol';
 import {Assertions} from '@libraries/Assertions.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = label('deployer');

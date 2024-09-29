@@ -4,9 +4,9 @@ pragma solidity 0.8.20;
 import {ProtocolToken, IProtocolToken} from '@contracts/tokens/ProtocolToken.sol';
 import {Pausable} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = label('deployer');

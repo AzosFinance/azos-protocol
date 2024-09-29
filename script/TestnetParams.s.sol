@@ -5,12 +5,12 @@ import '@script/Params.s.sol';
 
 abstract contract TestnetParams is Contracts, Params {
   // --- Testnet Params ---
-  uint256 constant OP_SEPOLIA_HAI_PRICE_DEVIATION = 0.995e18; // -0.5%
+  uint256 constant OP_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
   address constant OP_SEPOLIA_ADMIN_SAFE = 0xCAFd432b7EcAfff352D92fcB81c60380d437E99D;
 
   function _getEnvironmentParams() internal override {
     // Setup delegated collateral joins
-    delegatee[OP] = address(haiDelegatee);
+    delegatee[OP] = address(azosDelegatee);
 
     _safeEngineParams = ISAFEEngine.SAFEEngineParams({
       safeDebtCeiling: 1_000_000 * WAD, // WAD
@@ -22,10 +22,10 @@ abstract contract TestnetParams is Contracts, Params {
       surplusDelay: 1 days,
       popDebtDelay: 0,
       disableCooldown: 3 days,
-      surplusAmount: 42_000 * RAD, // 42k HAI
-      surplusBuffer: 100_000 * RAD, // 100k HAI
+      surplusAmount: 42_000 * RAD, // 42k ZAI
+      surplusBuffer: 100_000 * RAD, // 100k ZAI
       debtAuctionMintedTokens: 10_000 * WAD, // 10k KITE
-      debtAuctionBidSize: 1000 * RAD // 1k HAI
+      debtAuctionBidSize: 1000 * RAD // 1k ZAI
     });
 
     _debtAuctionHouseParams = IDebtAuctionHouse.DebtAuctionHouseParams({
@@ -44,12 +44,12 @@ abstract contract TestnetParams is Contracts, Params {
     });
 
     _liquidationEngineParams = ILiquidationEngine.LiquidationEngineParams({
-      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M HAI
+      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M ZAI
       saviourGasLimit: 10_000_000 // 10M gas
     });
 
     _stabilityFeeTreasuryParams = IStabilityFeeTreasury.StabilityFeeTreasuryParams({
-      treasuryCapacity: 1_000_000 * RAD, // 1M HAI
+      treasuryCapacity: 1_000_000 * RAD, // 1M ZAI
       pullFundsMinThreshold: 0, // no threshold
       surplusTransferDelay: 1 days
     });
@@ -129,18 +129,18 @@ abstract contract TestnetParams is Contracts, Params {
       });
 
       _safeEngineCParams[_cType] = ISAFEEngine.SAFEEngineCollateralParams({
-        debtCeiling: 10_000_000 * RAD, // 10M HAI
-        debtFloor: 1 * RAD // 1 HAI
+        debtCeiling: 10_000_000 * RAD, // 10M ZAI
+        debtFloor: 1 * RAD // 1 ZAI
       });
 
       _liquidationEngineCParams[_cType] = ILiquidationEngine.LiquidationEngineCollateralParams({
         collateralAuctionHouse: address(collateralAuctionHouse[_cType]),
         liquidationPenalty: 1.1e18, // 10%
-        liquidationQuantity: 1000 * RAD // 1000 HAI
+        liquidationQuantity: 1000 * RAD // 1000 ZAI
       });
 
       _collateralAuctionHouseParams[_cType] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
-        minimumBid: WAD, // 1 HAI
+        minimumBid: WAD, // 1 ZAI
         minDiscount: WAD, // no discount
         maxDiscount: 0.9e18, // -10%
         perSecondDiscountUpdateRate: MINUS_0_5_PERCENT_PER_HOUR // RAY
@@ -151,13 +151,13 @@ abstract contract TestnetParams is Contracts, Params {
     _oracleRelayerCParams[WETH].safetyCRatio = 1.35e27; // 135%
     _oracleRelayerCParams[WETH].liquidationCRatio = 1.35e27; // 135%
     _taxCollectorCParams[WETH].stabilityFee = RAY + 1.54713e18; // + 5%/yr
-    _safeEngineCParams[WETH].debtCeiling = 100_000_000 * RAD; // 100M HAI
+    _safeEngineCParams[WETH].debtCeiling = 100_000_000 * RAD; // 100M ZAI
 
     _liquidationEngineCParams[OP].liquidationPenalty = 1.2e18; // 20%
     _collateralAuctionHouseParams[OP].maxDiscount = 0.5e18; // -50%
 
     // --- Governance Params ---
-    _governorParams = IHaiGovernor.HaiGovernorParams({
+    _governorParams = IAzosGovernor.AzosGovernorParams({
       votingDelay: 12 hours, // 43_200
       votingPeriod: 36 hours, // 129_600
       proposalThreshold: 5000 * WAD, // 5k KITE
@@ -168,7 +168,7 @@ abstract contract TestnetParams is Contracts, Params {
 
     _tokenDistributorParams = ITokenDistributor.TokenDistributorParams({
       root: 0x6fc714df6371f577a195c2bfc47da41aa0ea15bba2651df126f3713a232244be,
-      totalClaimable: 1_000_000 * WAD, // 1M HAI
+      totalClaimable: 1_000_000 * WAD, // 1M ZAI
       claimPeriodStart: block.timestamp + 1 days,
       claimPeriodEnd: 1_735_689_599 // 1/1/2025 (GMT+0) - 1s
     });

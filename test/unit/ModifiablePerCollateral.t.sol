@@ -5,9 +5,9 @@ import {
   ModifiablePerCollateralForTest, IModifiablePerCollateral
 } from '@test/mocks/ModifiablePerCollateralForTest.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = label('deployer');

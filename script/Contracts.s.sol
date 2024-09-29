@@ -74,15 +74,15 @@ import {CollateralBidActions} from '@contracts/proxies/actions/CollateralBidActi
 import {PostSettlementSurplusBidActions} from '@contracts/proxies/actions/PostSettlementSurplusBidActions.sol';
 import {GlobalSettlementActions} from '@contracts/proxies/actions/GlobalSettlementActions.sol';
 import {RewardedActions} from '@contracts/proxies/actions/RewardedActions.sol';
-import {HaiProxy} from '@contracts/proxies/HaiProxy.sol';
-import {HaiProxyFactory} from '@contracts/proxies/HaiProxyFactory.sol';
-import {HaiSafeManager} from '@contracts/proxies/HaiSafeManager.sol';
+import {AzosProxy} from '@contracts/proxies/AzosProxy.sol';
+import {AzosProxyFactory} from '@contracts/proxies/AzosProxyFactory.sol';
+import {AzosSafeManager} from '@contracts/proxies/AzosSafeManager.sol';
 
 // --- Governance Contracts ---
 import {TimelockController} from '@openzeppelin/contracts/governance/TimelockController.sol';
-import {HaiGovernor, IHaiGovernor} from '@contracts/governance/HaiGovernor.sol';
+import {AzosGovernor, IAzosGovernor} from '@contracts/governance/AzosGovernor.sol';
 import {TokenDistributor, ITokenDistributor} from '@contracts/tokens/TokenDistributor.sol';
-import {HaiDelegatee} from '@contracts/governance/HaiDelegatee.sol';
+import {AzosDelegatee} from '@contracts/governance/AzosDelegatee.sol';
 
 /**
  * @title  Contracts
@@ -143,8 +143,8 @@ abstract contract Contracts {
   IOracleJob public oracleJob;
 
   // --- Proxy contracts ---
-  HaiProxyFactory public proxyFactory;
-  HaiSafeManager public safeManager;
+  AzosProxyFactory public proxyFactory;
+  AzosSafeManager public safeManager;
 
   BasicActions public basicActions;
   DebtBidActions public debtBidActions;
@@ -156,7 +156,7 @@ abstract contract Contracts {
 
   // --- Governance contracts ---
   TimelockController public timelock;
-  HaiGovernor public haiGovernor;
+  AzosGovernor public azosGovernor;
   TokenDistributor public tokenDistributor;
-  HaiDelegatee public haiDelegatee;
+  AzosDelegatee public azosDelegatee;
 }

@@ -78,8 +78,8 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     oracleJob = OracleJob(0xa668C53a49d50B2d3a5691C20Bac21c6F6dfaa23);
 
     // --- proxies ---
-    proxyFactory = HaiProxyFactory(0xDd19D0Bf1AF992A811303d9bBC32544ae058a95e);
-    safeManager = HaiSafeManager(0x5F697158D6B9A06ad048b43C44D5c611eD179960);
+    proxyFactory = AzosProxyFactory(0xDd19D0Bf1AF992A811303d9bBC32544ae058a95e);
+    safeManager = AzosSafeManager(0x5F697158D6B9A06ad048b43C44D5c611eD179960);
 
     basicActions = BasicActions(0xE55f91f49fa3103EF9a3d931bF898bA4eA1Eab17);
     debtBidActions = DebtBidActions(0xAc6f08c2208612260911C0B05Cdf07C1436D2268);
@@ -98,9 +98,9 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     delayedOracle[TOTEM] = IDelayedOracle(0x34a6405d42BFc95799CA8CC7b9037Ea618457998);
 
     // --- governance ---
-    haiGovernor = HaiGovernor(payable(0xAf04b922Ba9762B1de61334d3d1cfDf0c1A3DcB0));
+    azosGovernor = AzosGovernor(payable(0xAf04b922Ba9762B1de61334d3d1cfDf0c1A3DcB0));
     timelock = TimelockController(payable(0x77B522Ac7bd1Feeb1783199Dc753784a4C51634e));
-    haiDelegatee = HaiDelegatee(0x50649bcA8f69eaF28a0563c688F71a4ee1666264);
+    azosDelegatee = AzosDelegatee(0x50649bcA8f69eaF28a0563c688F71a4ee1666264);
 
     tokenDistributor = TokenDistributor(0x5684Ea6cf4A323F410a1Eb25B4A6ec8D8a93Cf24); // ignore for subgraph testing
 

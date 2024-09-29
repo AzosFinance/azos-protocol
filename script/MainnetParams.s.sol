@@ -9,7 +9,7 @@ abstract contract MainnetParams is Contracts, Params {
   // --- Mainnet Params ---
   function _getEnvironmentParams() internal override {
     // Setup delegated collateral joins
-    delegatee[OP] = address(haiDelegatee);
+    delegatee[OP] = address(azosDelegatee);
 
     _safeEngineParams = ISAFEEngine.SAFEEngineParams({
       safeDebtCeiling: 1_000_000 * WAD, // WAD
@@ -21,10 +21,10 @@ abstract contract MainnetParams is Contracts, Params {
       surplusDelay: 1 days,
       popDebtDelay: 14 days,
       disableCooldown: 3 days,
-      surplusAmount: 42_000 * RAD, // 42k HAI
-      surplusBuffer: 100_000 * RAD, // 100k HAI
+      surplusAmount: 42_000 * RAD, // 42k ZAI
+      surplusBuffer: 100_000 * RAD, // 100k ZAI
       debtAuctionMintedTokens: 10_000 * WAD, // 10k KITE
-      debtAuctionBidSize: 10_000 * RAD // 10k HAI
+      debtAuctionBidSize: 10_000 * RAD // 10k ZAI
     });
 
     _debtAuctionHouseParams = IDebtAuctionHouse.DebtAuctionHouseParams({
@@ -43,12 +43,12 @@ abstract contract MainnetParams is Contracts, Params {
     });
 
     _liquidationEngineParams = ILiquidationEngine.LiquidationEngineParams({
-      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M HAI
+      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M ZAI
       saviourGasLimit: 10_000_000 // 10M gas
     });
 
     _stabilityFeeTreasuryParams = IStabilityFeeTreasury.StabilityFeeTreasuryParams({
-      treasuryCapacity: 1_000_000 * RAD, // 1M HAI
+      treasuryCapacity: 1_000_000 * RAD, // 1M ZAI
       pullFundsMinThreshold: 0, // no threshold
       surplusTransferDelay: 1 days
     });
@@ -111,8 +111,8 @@ abstract contract MainnetParams is Contracts, Params {
     // --- Collateral Specific Params ---
     // ------------ WETH ------------
     _safeEngineCParams[WETH] = ISAFEEngine.SAFEEngineCollateralParams({
-      debtCeiling: 25_000_000 * RAD, // 25M HAI
-      debtFloor: 150 * RAD // 150 HAI
+      debtCeiling: 25_000_000 * RAD, // 25M ZAI
+      debtFloor: 150 * RAD // 150 ZAI
     });
 
     _oracleRelayerCParams[WETH] = IOracleRelayer.OracleRelayerCollateralParams({
@@ -126,11 +126,11 @@ abstract contract MainnetParams is Contracts, Params {
     _liquidationEngineCParams[WETH] = ILiquidationEngine.LiquidationEngineCollateralParams({
       collateralAuctionHouse: address(collateralAuctionHouse[WETH]),
       liquidationPenalty: 1.1e18, // 10%
-      liquidationQuantity: 50_000 * RAD // 50k HAI
+      liquidationQuantity: 50_000 * RAD // 50k ZAI
     });
 
     _collateralAuctionHouseParams[WETH] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
-      minimumBid: 100 * WAD, // 100 HAI
+      minimumBid: 100 * WAD, // 100 ZAI
       minDiscount: 1e18, // no discount
       maxDiscount: 0.9e18, // -10%
       perSecondDiscountUpdateRate: MINUS_10_PERCENT_IN_2_HOURS // -10% / 2hs
@@ -138,8 +138,8 @@ abstract contract MainnetParams is Contracts, Params {
 
     // ------------ WSTETH ------------
     _safeEngineCParams[WSTETH] = ISAFEEngine.SAFEEngineCollateralParams({
-      debtCeiling: 25_000_000 * RAD, // 25M HAI
-      debtFloor: 150 * RAD // 150 HAI
+      debtCeiling: 25_000_000 * RAD, // 25M ZAI
+      debtFloor: 150 * RAD // 150 ZAI
     });
 
     _oracleRelayerCParams[WSTETH] = IOracleRelayer.OracleRelayerCollateralParams({
@@ -153,11 +153,11 @@ abstract contract MainnetParams is Contracts, Params {
     _liquidationEngineCParams[WSTETH] = ILiquidationEngine.LiquidationEngineCollateralParams({
       collateralAuctionHouse: address(collateralAuctionHouse[WSTETH]),
       liquidationPenalty: 1.1e18, // 10%
-      liquidationQuantity: 50_000 * RAD // 50k HAI
+      liquidationQuantity: 50_000 * RAD // 50k ZAI
     });
 
     _collateralAuctionHouseParams[WSTETH] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
-      minimumBid: 100 * WAD, // 100 HAI
+      minimumBid: 100 * WAD, // 100 ZAI
       minDiscount: 1e18, // no discount
       maxDiscount: 0.9e18, // -10%
       perSecondDiscountUpdateRate: MINUS_10_PERCENT_IN_2_HOURS // -10% / 2hs
@@ -165,8 +165,8 @@ abstract contract MainnetParams is Contracts, Params {
 
     // ------------ OP ------------
     _safeEngineCParams[OP] = ISAFEEngine.SAFEEngineCollateralParams({
-      debtCeiling: 5_000_000 * RAD, // 5M HAI
-      debtFloor: 150 * RAD // 150 HAI
+      debtCeiling: 5_000_000 * RAD, // 5M ZAI
+      debtFloor: 150 * RAD // 150 ZAI
     });
 
     _oracleRelayerCParams[OP] = IOracleRelayer.OracleRelayerCollateralParams({
@@ -180,18 +180,18 @@ abstract contract MainnetParams is Contracts, Params {
     _liquidationEngineCParams[OP] = ILiquidationEngine.LiquidationEngineCollateralParams({
       collateralAuctionHouse: address(collateralAuctionHouse[OP]),
       liquidationPenalty: 1.15e18, // 15%
-      liquidationQuantity: 50_000 * RAD // 50k HAI
+      liquidationQuantity: 50_000 * RAD // 50k ZAI
     });
 
     _collateralAuctionHouseParams[OP] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
-      minimumBid: 100 * WAD, // 100 HAI
+      minimumBid: 100 * WAD, // 100 ZAI
       minDiscount: 1e18, // no discount
       maxDiscount: 0.85e18, // -15%
       perSecondDiscountUpdateRate: MINUS_15_PERCENT_IN_2_HOURS // -15% / 2hs
     });
 
     // --- Governance Params ---
-    _governorParams = IHaiGovernor.HaiGovernorParams({
+    _governorParams = IAzosGovernor.AzosGovernorParams({
       votingDelay: 12 hours, // 43_200
       votingPeriod: 36 hours, // 129_600
       proposalThreshold: 5000 * WAD, // 5k KITE
@@ -202,7 +202,7 @@ abstract contract MainnetParams is Contracts, Params {
 
     _tokenDistributorParams = ITokenDistributor.TokenDistributorParams({
       root: 0xfb2ccf2133c19008b5bb590df11d243c8bf4ad5c9a8210d86f7f1f78ee46d634,
-      totalClaimable: 1_000_000 * WAD, // 1M HAI
+      totalClaimable: 1_000_000 * WAD, // 1M ZAI
       claimPeriodStart: 1_707_782_400, // 13/2/2024 (GMT+0)
       claimPeriodEnd: 1_735_689_599 // 1/1/2025 (GMT+0) - 1s
     });

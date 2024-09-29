@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-interface IHaiSafeManager {
+interface IAzosSafeManager {
   // --- Events ---
 
   /// @notice Emitted when calling allowSAFE with the sender address and the method arguments

@@ -3,7 +3,7 @@ pragma solidity 0.8.20;
 
 import {IGovernor} from '@openzeppelin/contracts/governance/IGovernor.sol';
 
-interface IHaiDelegatee {
+interface IAzosDelegatee {
   // --- Events ---
 
   /**

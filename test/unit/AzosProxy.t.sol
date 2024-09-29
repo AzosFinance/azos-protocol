@@ -1,29 +1,29 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiProxy, IHaiProxy} from '@contracts/proxies/HaiProxy.sol';
+import {AzosProxy, IAzosProxy} from '@contracts/proxies/AzosProxy.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {Address} from '@openzeppelin/contracts/utils/Address.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = label('deployer');
   address owner = label('owner');
 
-  HaiProxy proxy;
+  AzosProxy proxy;
 
   function setUp() public virtual {
     vm.startPrank(deployer);
 
-    proxy = new HaiProxy(owner);
+    proxy = new AzosProxy(owner);
 
     vm.stopPrank();
   }
 }
 
-contract Unit_HaiProxy_Execute is Base {
+contract Unit_AzosProxy_Execute is Base {
   address target = label('target');
 
   modifier happyPath() {
@@ -45,7 +45,7 @@ contract Unit_HaiProxy_Execute is Base {
   }
 
   function test_Revert_TargetAddressZero() public happyPath {
-    vm.expectRevert(IHaiProxy.TargetAddressRequired.selector);
+    vm.expectRevert(IAzosProxy.TargetAddressRequired.selector);
 
     proxy.execute(address(0), bytes(''));
   }

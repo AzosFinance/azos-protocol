@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 import {Deploy, DeployMainnet, DeployTestnet} from '@script/Deploy.s.sol';
 
 import {
@@ -11,9 +11,9 @@ import {
   OP,
   WBTC,
   STONES,
-  HAI_POOL_FEE_TIER,
-  HAI_POOL_OBSERVATION_CARDINALITY,
-  HAI_ETH_INITIAL_TICK
+  ZAI_POOL_FEE_TIER,
+  ZAI_POOL_OBSERVATION_CARDINALITY,
+  ZAI_ETH_INITIAL_TICK
 } from '@script/Params.s.sol';
 import {UNISWAP_V3_FACTORY, OP_OPTIMISM, OP_CHAINLINK_ETH_USD_FEED} from '@script/Registry.s.sol';
 import {ERC20Votes} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol';
@@ -24,7 +24,7 @@ import {TestnetDeployment} from '@script/TestnetDeployment.s.sol';
 import {MainnetDeployment} from '@script/MainnetDeployment.s.sol';
 import 'forge-std/console.sol';
 
-abstract contract CommonDeploymentTest is HaiTest, Deploy {
+abstract contract CommonDeploymentTest is AzosTest, Deploy {
   uint256 _governorAccounts;
 
   // SAFEEngine
@@ -439,27 +439,27 @@ abstract contract CommonDeploymentTest is HaiTest, Deploy {
   // }
 
   function test_Timelock_Auth() public {
-    assertEq(timelock.hasRole(keccak256('PROPOSER_ROLE'), address(haiGovernor)), true);
-    assertEq(timelock.hasRole(keccak256('CANCELLER_ROLE'), address(haiGovernor)), true);
-    assertEq(timelock.hasRole(keccak256('EXECUTOR_ROLE'), address(haiGovernor)), true);
+    assertEq(timelock.hasRole(keccak256('PROPOSER_ROLE'), address(azosGovernor)), true);
+    assertEq(timelock.hasRole(keccak256('CANCELLER_ROLE'), address(azosGovernor)), true);
+    assertEq(timelock.hasRole(keccak256('EXECUTOR_ROLE'), address(azosGovernor)), true);
   }
 
   function test_Timelock_Params() public {
     assertEq(timelock.getMinDelay(), _governorParams.timelockMinDelay);
   }
 
-  // function test_HaiGovernor_Bytecode_MANUAL_CHECK() public {
+  // function test_AzosGovernor_Bytecode_MANUAL_CHECK() public {
   //     // Not possible to check bytecode because it has immutable storage
   //     // Needs to be manually checked
   // }
 
-  function test_HaiGovernor_Params() public {
-    assertEq(haiGovernor.votingDelay(), _governorParams.votingDelay);
-    assertEq(haiGovernor.votingPeriod(), _governorParams.votingPeriod);
-    assertEq(haiGovernor.proposalThreshold(), _governorParams.proposalThreshold);
+  function test_AzosGovernor_Params() public {
+    assertEq(azosGovernor.votingDelay(), _governorParams.votingDelay);
+    assertEq(azosGovernor.votingPeriod(), _governorParams.votingPeriod);
+    assertEq(azosGovernor.proposalThreshold(), _governorParams.proposalThreshold);
 
-    assertEq(address(haiGovernor.token()), address(protocolToken));
-    assertEq(address(haiGovernor.timelock()), address(timelock));
+    assertEq(address(azosGovernor.token()), address(protocolToken));
+    assertEq(address(azosGovernor.timelock()), address(timelock));
   }
 
   // TokenDistributor
@@ -485,7 +485,7 @@ abstract contract CommonDeploymentTest is HaiTest, Deploy {
   // }
 
   function test_Delegated_OP() public {
-    assertEq(ERC20Votes(OP_OPTIMISM).delegates(address(collateralJoin[OP])), address(haiDelegatee));
+    assertEq(ERC20Votes(OP_OPTIMISM).delegates(address(collateralJoin[OP])), address(azosDelegatee));
   }
 
   function _test_Authorizations(address _target, bool _permission) internal {
@@ -513,23 +513,23 @@ contract E2EDeploymentMainnetTest is DeployMainnet, CommonDeploymentTest {
     super.setUp();
     run();
 
-    // Initialize HAI/WETH UniV3 pool (already deployed in _setupPostEnvironment)
+    // Initialize ZAI/WETH UniV3 pool (already deployed in _setupPostEnvironment)
     _deployUniV3Pool(
       UNISWAP_V3_FACTORY,
       address(collateral[WETH]),
       address(systemCoin),
-      HAI_POOL_FEE_TIER,
-      HAI_POOL_OBSERVATION_CARDINALITY,
-      HAI_ETH_INITIAL_TICK // 2000 HAI = 1 ETH
+      ZAI_POOL_FEE_TIER,
+      ZAI_POOL_OBSERVATION_CARDINALITY,
+      ZAI_ETH_INITIAL_TICK // 2000 ZAI = 1 ETH
     );
 
-    // NOTE: setup [ UniV3 HAI/WETH + Chainlink ETH/USD ] oracle through governance actions
+    // NOTE: setup [ UniV3 ZAI/WETH + Chainlink ETH/USD ] oracle through governance actions
     vm.startPrank(governor);
     // grab the last denominated oracle deployed (in _setupPostEnvironment)
     address[] memory _denominatedOracles = denominatedOracleFactory.denominatedOraclesList();
     systemCoinOracle = IBaseOracle(_denominatedOracles[_denominatedOracles.length - 1]);
     // assert we grabbed the correct oracle
-    assertEq(systemCoinOracle.symbol(), '(HAI / WETH) * (ETH / USD)');
+    assertEq(systemCoinOracle.symbol(), '(ZAI / WETH) * (ETH / USD)');
 
     oracleRelayer.modifyParameters('systemCoinOracle', abi.encode(systemCoinOracle));
 
@@ -571,10 +571,10 @@ contract E2EDeploymentMainnetTest is DeployMainnet, CommonDeploymentTest {
     vm.warp(block.timestamp + 1 days);
     (uint256 _quote,) = systemCoinOracle.getResultWithValidity();
 
-    assertEq(systemCoinOracle.symbol(), '(HAI / WETH) * (ETH / USD)');
+    assertEq(systemCoinOracle.symbol(), '(ZAI / WETH) * (ETH / USD)');
 
     // NOTE: Temporarily disabled
-    // assertEq(_quote > 1e18 ? _quote / 1e17 : 1e19 / _quote, 10); // 1.0 HAI = 1.0 USD
+    // assertEq(_quote > 1e18 ? _quote / 1e17 : 1e19 / _quote, 10); // 1.0 ZAI = 1.0 USD
   }
 
   function _refreshChainlinkFeed(address _chainlinkFeed, uint256 _quote) internal {

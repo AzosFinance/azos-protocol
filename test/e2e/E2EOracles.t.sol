@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 import {IChainlinkOracle} from '@interfaces/oracles/IChainlinkOracle.sol';
 
 import {ChainlinkRelayer, IBaseOracle} from '@contracts/oracles/ChainlinkRelayer.sol';
@@ -21,7 +21,7 @@ import {
 
 import {Math, WAD} from '@libraries/Math.sol';
 
-contract E2EOracleSetup is HaiTest {
+contract E2EOracleSetup is AzosTest {
   using Math for uint256;
 
   uint256 FORK_BLOCK = 99_000_000;

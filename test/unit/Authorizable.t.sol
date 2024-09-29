@@ -2,9 +2,9 @@
 pragma solidity 0.8.20;
 
 import {AuthorizableForTest, IAuthorizable} from '@test/mocks/AuthorizableForTest.sol';
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 
-abstract contract Base is HaiTest {
+abstract contract Base is AzosTest {
   address deployer = label('deployer');
   address authorizedAccount = label('authorizedAccount');
 

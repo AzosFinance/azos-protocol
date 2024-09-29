@@ -15,11 +15,10 @@ import {TestnetParams, WETH, OP, WBTC, STONES, TOTEM} from '@script/TestnetParam
  * @dev    This contract imports deployed addresses from `TestnetDeployment.s.sol`
  */
 contract TestnetScript is TestnetDeployment, Common, Script {
-
   string public mnemonic;
   address[] public publicKeys;
   uint256[] public privateKeys;
-  HaiProxy[] public proxies;
+  AzosProxy[] public proxies;
 
   function setUp() public virtual {}
 
@@ -50,10 +49,10 @@ contract TestnetScript is TestnetDeployment, Common, Script {
     }
   }
 
-    // note that the SafeIds from the GebSafeManager will correspond to the indices of the publicKeys array
+  // note that the SafeIds from the GebSafeManager will correspond to the indices of the publicKeys array
   function openSafe(
     address owner,
-    HaiProxy proxy,
+    AzosProxy proxy,
     uint256 collateralAmount,
     uint256 deltaWad,
     address collateralJoin,
@@ -83,7 +82,7 @@ contract TestnetScript is TestnetDeployment, Common, Script {
       uint256 wbtcDelta = 1000 ether;
       uint256 stonesDelta = 1000 ether;
       uint256 totemDelta = 1000 ether;
-      openSafe(publicKeys[i], proxies[i], userAmount, wbtcDelta, address(collateralJoin[WBTC]), WBTC );
+      openSafe(publicKeys[i], proxies[i], userAmount, wbtcDelta, address(collateralJoin[WBTC]), WBTC);
       openSafe(publicKeys[i], proxies[i], userAmount, stonesDelta, address(collateralJoin[STONES]), STONES);
       openSafe(publicKeys[i], proxies[i], userAmount, totemDelta, address(collateralJoin[TOTEM]), TOTEM);
     }
@@ -100,7 +99,7 @@ contract TestnetScript is TestnetDeployment, Common, Script {
   function deployProxies() public {
     for (uint32 i = 0; i < publicKeys.length; i++) {
       address userProxyAddress = deployProxy(publicKeys[i]);
-      HaiProxy userProxy = HaiProxy(payable(userProxyAddress));
+      AzosProxy userProxy = AzosProxy(payable(userProxyAddress));
       proxies.push(userProxy);
     }
   }

@@ -10,7 +10,7 @@ import {ICoinJoin} from '@interfaces/utils/ICoinJoin.sol';
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 
 import {StabilityFeeTreasuryForTest} from '@test/mocks/StabilityFeeTreasuryForTest.sol';
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 import {StdStorage, stdStorage} from 'forge-std/StdStorage.sol';
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -18,7 +18,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 import {Math, RAY, WAD, HOUR} from '@libraries/Math.sol';
 import {Assertions} from '@libraries/Assertions.sol';
 
-contract Base is HaiTest {
+contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   address deployer = label('deployer');

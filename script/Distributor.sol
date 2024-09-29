@@ -1,12 +1,16 @@
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
 contract Distributor {
-  function distribute(address[] memory recipients) public payable returns (uint256, address[] memory) {
-    uint256 amount = msg.value / recipients.length;
-    for (uint256 i = 0; i < recipients.length; i++) {
-      (bool success,) = payable(recipients[i]).call{value: amount}('');
-      require(success, 'Transfer failed');
+  function distribute(address[] memory _recipients)
+    public
+    payable
+    returns (uint256 _amount, address[] memory _returnedRecipients)
+  {
+    _amount = msg.value / _recipients.length;
+    for (uint256 _i = 0; _i < _recipients.length; _i++) {
+      (bool _success,) = payable(_recipients[_i]).call{value: _amount}('');
+      require(_success, 'Transfer failed');
     }
-    return (amount, recipients);
+    return (_amount, _recipients);
   }
 }

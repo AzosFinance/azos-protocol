@@ -18,7 +18,7 @@ import {
   ITaxCollector,
   IGlobalSettlement,
   IPostSettlementSurplusAuctionHouse,
-  IHaiGovernor,
+  IAzosGovernor,
   ITokenDistributor,
   IModifiable
 } from '@script/Contracts.s.sol';
@@ -27,14 +27,14 @@ import {WAD, RAY, RAD} from '@libraries/Math.sol';
 
 // --- Utils ---
 
-// HAI Params
-bytes32 constant HAI = bytes32('HAI'); // 0x4841490000000000000000000000000000000000000000000000000000000000
-uint256 constant HAI_USD_INITIAL_PRICE = 1e18; // 1 HAI = 1 USD
-uint256 constant HAI_ETH_INITIAL_PRICE = 0.0005e18; // 2000 HAI = 1 ETH
-int24 constant HAI_ETH_INITIAL_TICK = 76_013; // ~2000 HAI = 1 ETH
+// ZAI Params
+bytes32 constant ZAI = bytes32('ZAI'); // 0x4841490000000000000000000000000000000000000000000000000000000000
+uint256 constant ZAI_USD_INITIAL_PRICE = 1e18; // 1 ZAI = 1 USD
+uint256 constant ZAI_ETH_INITIAL_PRICE = 0.0005e18; // 2000 ZAI = 1 ETH
+int24 constant ZAI_ETH_INITIAL_TICK = 76_013; // ~2000 ZAI = 1 ETH
 
-uint24 constant HAI_POOL_FEE_TIER = 3000; // 0.3 %
-uint16 constant HAI_POOL_OBSERVATION_CARDINALITY = 5000; // Safest cardinality would be 43.2k (at 2s per block, 1d TWAP)
+uint24 constant ZAI_POOL_FEE_TIER = 3000; // 0.3 %
+uint16 constant ZAI_POOL_OBSERVATION_CARDINALITY = 5000; // Safest cardinality would be 43.2k (at 2s per block, 1d TWAP)
 
 // Collateral Names
 bytes32 constant ETH_A = bytes32('ETH-A'); // 0x4554482d41000000000000000000000000000000000000000000000000000000
@@ -85,8 +85,6 @@ uint256 constant PLUS_950_PERCENT_PER_YEAR = 1_000_000_074_561_623_060_142_516_3
 // uint256 constant PROPORTIONAL_GAIN = 111_001_102_931; // 50% of RAI's
 // uint256 constant INTEGRAL_GAIN = 32_884; // 200% of RAI's
 
-// NOTE: HAI values are determined from this proposal: https://www.tally.xyz/gov/hai/proposal/32479302120926519766179048244685655250705286874030325872305136895885783434706
-
 // Set the controller Kp term to 1.54712579996991E-07
 // 1.54712579996991E-07
 // 0.000000154712579996991
@@ -100,7 +98,7 @@ uint256 constant PROPORTIONAL_GAIN = 154_712_579_997;
 uint256 constant INTEGRAL_GAIN = 13_785;
 
 // Job Params
-uint256 constant JOB_REWARD = 1 * WAD; // 1 HAI
+uint256 constant JOB_REWARD = 1 * WAD; // 1 ZAI
 
 /**
  * @title Params
@@ -139,7 +137,7 @@ abstract contract Params {
   IPostSettlementSurplusAuctionHouse.PostSettlementSAHParams _postSettlementSAHParams;
 
   // --- Governor params ---
-  IHaiGovernor.HaiGovernorParams _governorParams;
+  IAzosGovernor.AzosGovernorParams _governorParams;
   ITokenDistributor.TokenDistributorParams _tokenDistributorParams;
 }
 

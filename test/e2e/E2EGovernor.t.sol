@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 import {Deploy, DeployMainnet} from '@script/Deploy.s.sol';
 import {Governor, IGovernor} from '@openzeppelin/contracts/governance/Governor.sol';
 import {TimelockController} from '@openzeppelin/contracts/governance/TimelockController.sol';
 
-abstract contract E2EGovernorTest is HaiTest, Deploy {
+abstract contract E2EGovernorTest is AzosTest, Deploy {
   address whale = address(0x420);
   address random = address(0x42069);
 
@@ -22,7 +22,7 @@ abstract contract E2EGovernorTest is HaiTest, Deploy {
     description = 'Unpause the protocol';
 
     vm.startPrank(whale);
-    uint256 _proposalId = haiGovernor.propose(targets, values, callDatas, description);
+    uint256 _proposalId = azosGovernor.propose(targets, values, callDatas, description);
 
     vm.expectRevert();
     protocolToken.transfer(address(0x69), 1);
@@ -32,27 +32,27 @@ abstract contract E2EGovernorTest is HaiTest, Deploy {
         IGovernor.GovernorUnexpectedProposalState.selector, _proposalId, IGovernor.ProposalState.Pending, 0x2
       )
     );
-    haiGovernor.castVote(_proposalId, 1);
+    azosGovernor.castVote(_proposalId, 1);
 
     vm.warp(block.timestamp + _governorParams.votingDelay + 1);
-    haiGovernor.castVote(_proposalId, 1);
+    azosGovernor.castVote(_proposalId, 1);
 
     vm.expectRevert(
       abi.encodeWithSelector(
         IGovernor.GovernorUnexpectedProposalState.selector, _proposalId, IGovernor.ProposalState.Active, 0x10
       )
     );
-    haiGovernor.queue(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.queue(targets, values, callDatas, keccak256(bytes(description)));
 
     vm.warp(block.timestamp + _governorParams.votingPeriod + 1);
-    haiGovernor.queue(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.queue(targets, values, callDatas, keccak256(bytes(description)));
 
     vm.expectRevert();
     // abi.encodeWithSelector(TimelockController.TimelockUnexpectedOperationState.selector, PROPOSAL_HASH, 0x2)
-    haiGovernor.execute(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.execute(targets, values, callDatas, keccak256(bytes(description)));
 
     vm.warp(block.timestamp + _governorParams.timelockMinDelay + 1);
-    haiGovernor.execute(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.execute(targets, values, callDatas, keccak256(bytes(description)));
 
     protocolToken.transfer(random, 1);
   }
@@ -69,14 +69,14 @@ abstract contract E2EGovernorTest is HaiTest, Deploy {
     description = 'Unpause the protocol';
 
     vm.prank(whale);
-    haiGovernor.propose(targets, values, callDatas, description);
+    azosGovernor.propose(targets, values, callDatas, description);
 
     vm.expectRevert(abi.encodeWithSelector(IGovernor.GovernorOnlyProposer.selector, random));
     vm.prank(random);
-    haiGovernor.cancel(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.cancel(targets, values, callDatas, keccak256(bytes(description)));
 
     vm.prank(whale);
-    haiGovernor.cancel(targets, values, callDatas, keccak256(bytes(description)));
+    azosGovernor.cancel(targets, values, callDatas, keccak256(bytes(description)));
   }
 }
 

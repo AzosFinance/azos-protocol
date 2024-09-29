@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: MIT
 pragma solidity 0.8.20;
 
-import {IHaiGovernor} from '@interfaces/governance/IHaiGovernor.sol';
+import {IAzosGovernor} from '@interfaces/governance/IAzosGovernor.sol';
 
 import {Governor} from '@openzeppelin/contracts/governance/Governor.sol';
 import {GovernorSettings} from '@openzeppelin/contracts/governance/extensions/GovernorSettings.sol';
@@ -16,10 +16,10 @@ import {
 } from '@openzeppelin/contracts/governance/extensions/GovernorTimelockControl.sol';
 
 /**
- * @title  HaiGovernor
+ * @title  AzosGovernor
  * @notice This contract implements OpenZeppelin's Governor contract overriding the clock to use block.timestamp
  */
-contract HaiGovernor is
+contract AzosGovernor is
   Governor,
   GovernorSettings,
   GovernorCountingSimple,
@@ -31,7 +31,7 @@ contract HaiGovernor is
   constructor(
     IVotes _token,
     string memory _governorName,
-    IHaiGovernor.HaiGovernorParams memory _params
+    IAzosGovernor.AzosGovernorParams memory _params
   )
     Governor(_governorName)
     GovernorSettings(_params.votingDelay, _params.votingPeriod, _params.proposalThreshold)

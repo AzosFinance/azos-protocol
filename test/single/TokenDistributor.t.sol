@@ -4,13 +4,13 @@ pragma solidity 0.8.20;
 import {TokenDistributor, ITokenDistributor} from '@contracts/tokens/TokenDistributor.sol';
 import {ProtocolToken} from '@contracts/tokens/ProtocolToken.sol';
 import {MerkleTreeGenerator} from '@test/utils/MerkleTreeGenerator.sol';
-import {HaiTest} from '@test/utils/HaiTest.t.sol';
+import {AzosTest} from '@test/utils/AzosTest.t.sol';
 
 abstract contract Hevm {
   function warp(uint256) public virtual;
 }
 
-contract SingleTokenDistributorTest is HaiTest {
+contract SingleTokenDistributorTest is AzosTest {
   Hevm hevm;
 
   TokenDistributor tokenDistributor;

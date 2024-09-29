@@ -1,6 +1,6 @@
-pragma solidity ^0.8.19;
+pragma solidity ^0.8.20;
 
-import 'forge-std/Script.sol';
+import {Script} from 'forge-std/Script.sol';
 import {Distributor} from './Distributor.sol';
 
 contract DistributeETH is Script {
@@ -12,10 +12,10 @@ contract DistributeETH is Script {
   uint256 public chainId;
 
   function deriveKeys() public {
-    for (uint32 i = 0; i < 10; i++) {
-      (address publicKey, uint256 privateKey) = deriveRememberKey(mnemonic, i);
-      publicKeys.push(publicKey);
-      privateKeys.push(privateKey);
+    for (uint32 _i = 0; _i < 10; _i++) {
+      (address _publicKey, uint256 _privateKey) = deriveRememberKey(mnemonic, _i);
+      publicKeys.push(_publicKey);
+      privateKeys.push(_privateKey);
     }
   }
 
@@ -23,21 +23,18 @@ contract DistributeETH is Script {
     vm.startBroadcast();
     uint256 _amount = 0.5 ether;
 
-    uint256 id;
+    uint256 _id;
     assembly {
-      id := chainid()
+      _id := chainid()
     }
-    chainId = id;
+    chainId = _id;
 
     mnemonic = vm.envString('MNEMONIC');
     deriveKeys();
 
     distributor = new Distributor();
 
-    (uint256 amount,) = distributor.distribute{value: _amount}(publicKeys);
-
-    console2.log('Distributed: ');
-    console2.logUint(amount);
+    (_amount,) = distributor.distribute{value: _amount}(publicKeys);
 
     // source .env && forge script DistributeETH -vvvvv --rpc-url $OP_SEPOLIA_RPC --broadcast --private-key $OP_SEPOLIA_DEPLOYER_PK --verify --etherscan-api-key $OP_ETHERSCAN_API_KEY
   }

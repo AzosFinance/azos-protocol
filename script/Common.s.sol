@@ -12,19 +12,19 @@ abstract contract Common is Contracts, Params {
   uint256 internal _governorPK;
 
   function deployTokens() public updateParams {
-    systemCoin = new SystemCoin('HAI Index Token', 'HAI');
-    protocolToken = new ProtocolToken('Protocol Token', 'KITE');
+    systemCoin = new SystemCoin('ZAI Impact Backed', 'ZAI');
+    protocolToken = new ProtocolToken('Protocol Token', 'AZOS');
   }
 
   function deployGovernance() public updateParams {
-    IHaiGovernor.HaiGovernorParams memory _emptyGovernorParams;
+    IAzosGovernor.AzosGovernorParams memory _emptyGovernorParams;
     // if governor params are not empty, deploy governor
     if (keccak256(abi.encode(_governorParams)) != keccak256(abi.encode(_emptyGovernorParams))) {
-      haiGovernor = new HaiGovernor(protocolToken, 'HaiGovernor', _governorParams);
+      azosGovernor = new AzosGovernor(protocolToken, 'AzosGovernor', _governorParams);
 
-      timelock = TimelockController(payable(haiGovernor.timelock()));
+      timelock = TimelockController(payable(azosGovernor.timelock()));
 
-      haiDelegatee = new HaiDelegatee(address(timelock));
+      azosDelegatee = new AzosDelegatee(address(timelock));
 
       // sets timelock as protocol governor
       governor = address(timelock);
@@ -188,8 +188,8 @@ abstract contract Common is Contracts, Params {
   }
 
   function deployProxyContracts(address _safeEngine) public updateParams {
-    proxyFactory = new HaiProxyFactory();
-    safeManager = new HaiSafeManager(_safeEngine);
+    proxyFactory = new AzosProxyFactory();
+    safeManager = new AzosSafeManager(_safeEngine);
     _deployProxyActions();
   }
 
@@ -254,7 +254,7 @@ abstract contract Common is Contracts, Params {
     _contract.removeAuthorization(deployer);
   }
 
-  function _shouldRevoke() internal view returns (bool) {
+  function _shouldRevoke() internal view returns (bool success) {
     return governor != deployer && governor != address(0);
   }
 

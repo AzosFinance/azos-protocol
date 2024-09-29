@@ -7,7 +7,7 @@ import {OP_WETH, OP_WSTETH, OP_OPTIMISM} from '@script/Registry.s.sol';
 
 abstract contract MainnetDeployment is Contracts, MainnetParams {
   // NOTE: The last significant change in the Mainnet deployment, to be used in the test scenarios
-  uint256 constant MAINNET_DEPLOYMENT_BLOCK = 117_961_164;
+  uint256 public constant MAINNET_DEPLOYMENT_BLOCK = 117_961_164;
 
   /**
    * @notice All the addresses that were deployed in the Mainnet deployment, in order of creation
@@ -70,8 +70,8 @@ abstract contract MainnetDeployment is Contracts, MainnetParams {
     oracleJob = OracleJob(0xF4F18205D8D46638489865e42c0a71a3d4F9FC22);
 
     // --- proxies ---
-    proxyFactory = HaiProxyFactory(0xBAfbCDbFbB1569722253ED4D491D2fB3b5E03a27);
-    safeManager = HaiSafeManager(0xB0FF82D8322f6Fa9C28Ec46eF0A5C343e95106C3);
+    proxyFactory = AzosProxyFactory(0xBAfbCDbFbB1569722253ED4D491D2fB3b5E03a27);
+    safeManager = AzosSafeManager(0xB0FF82D8322f6Fa9C28Ec46eF0A5C343e95106C3);
 
     basicActions = BasicActions(0x7Bd5fBa59E6FF3ad5c6937CdD83f5cAf7aA49669);
     debtBidActions = DebtBidActions(0xFC55B886a2619bd8645549f7Cb672872479F8117);
@@ -82,16 +82,16 @@ abstract contract MainnetDeployment is Contracts, MainnetParams {
     rewardedActions = RewardedActions(0xB688d73B58e5004341f855f3E71177316281cDE7);
 
     // --- oracles ---
-    // NOTE: HAI/USD(UniV3+Chainlink)@0x2e97fF3AB68D806324c10794f8a75B887C375312
+    // NOTE: Azos/USD(UniV3+Chainlink)@0x2e97fF3AB68D806324c10794f8a75B887C375312
     systemCoinOracle = IBaseOracle(0x8c212bCaE328669c8b045D467CB78b88e0BE0D39);
     delayedOracle[WETH] = IDelayedOracle(0x2fC0cb2c5065a79bC2db79e4fbD537b7CaCF6f36);
     delayedOracle[WSTETH] = IDelayedOracle(0xB64c0f551C006d932484a6F86Ea7A20D73e4f77C);
     delayedOracle[OP] = IDelayedOracle(0x519011D32806f324364201C5C98579aEC55D9011);
 
     // --- governance ---
-    haiGovernor = HaiGovernor(payable(0xe807f3282f3391d237BA8B9bECb0d8Ea3ba23777));
+    azosGovernor = AzosGovernor(payable(0xe807f3282f3391d237BA8B9bECb0d8Ea3ba23777));
     timelock = TimelockController(payable(0xd68e7D20008a223dD48A6076AAf5EDd4fe80a899));
-    haiDelegatee = HaiDelegatee(0x2C6c638b93bA5a11DBD419305F14749Fc8AA2B63);
+    azosDelegatee = AzosDelegatee(0x2C6c638b93bA5a11DBD419305F14749Fc8AA2B63);
 
     tokenDistributor = TokenDistributor(0xCb96543b9f3657bE103Ba6371aaeD8a711Cc9E02);
 

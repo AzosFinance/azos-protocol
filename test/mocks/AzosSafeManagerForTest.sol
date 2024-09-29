@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
-import {HaiSafeManager, EnumerableSet} from '@contracts/proxies/HaiSafeManager.sol';
+import {AzosSafeManager, EnumerableSet} from '@contracts/proxies/AzosSafeManager.sol';
 
-contract HaiSafeManagerForTest is HaiSafeManager {
+contract AzosSafeManagerForTest is AzosSafeManager {
   using EnumerableSet for EnumerableSet.UintSet;
 
-  constructor(address _safeEngine) HaiSafeManager(_safeEngine) {}
+  constructor(address _safeEngine) AzosSafeManager(_safeEngine) {}
 
   function setSAFE(uint256 _safe, SAFEData memory __safeData) external {
     _safeData[_safe] = SAFEData({

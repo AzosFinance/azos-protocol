@@ -9,21 +9,21 @@ import {Math} from '@libraries/Math.sol';
 import {EnumerableSet} from '@openzeppelin/contracts/utils/structs/EnumerableSet.sol';
 import {Assertions} from '@libraries/Assertions.sol';
 
-import {IHaiSafeManager} from '@interfaces/proxies/IHaiSafeManager.sol';
+import {IAzosSafeManager} from '@interfaces/proxies/IAzosSafeManager.sol';
 
 /**
- * @title  HaiSafeManager
+ * @title  AzosSafeManager
  * @notice This contract acts as interface to the SAFEEngine, facilitating the management of SAFEs
  * @dev    This contract is meant to be used by users that interact with the protocol through a proxy contract
  */
-contract HaiSafeManager is IHaiSafeManager {
+contract AzosSafeManager is IAzosSafeManager {
   using Math for uint256;
   using EnumerableSet for EnumerableSet.UintSet;
   using Assertions for address;
 
   // --- Registry ---
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   address public safeEngine;
 
   // --- Data ---
@@ -37,9 +37,9 @@ contract HaiSafeManager is IHaiSafeManager {
   /// @notice Mapping of safe ids to their data
   mapping(uint256 _safeId => SAFEData) internal _safeData;
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   mapping(address _owner => mapping(uint256 _safeId => mapping(address _caller => bool _ok))) public safeCan;
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   mapping(address _safeHandler => mapping(address _caller => bool _ok)) public handlerCan;
 
   // --- Modifiers ---
@@ -74,17 +74,17 @@ contract HaiSafeManager is IHaiSafeManager {
 
   // --- Getters ---
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function getSafes(address _usr) external view returns (uint256[] memory _safes) {
     _safes = _usrSafes[_usr].values();
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function getSafes(address _usr, bytes32 _cType) external view returns (uint256[] memory _safes) {
     _safes = _usrSafesPerCollat[_usr][_cType].values();
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function getSafesData(address _usr)
     external
     view
@@ -99,27 +99,27 @@ contract HaiSafeManager is IHaiSafeManager {
     }
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function safeData(uint256 _safe) external view returns (SAFEData memory _sData) {
     _sData = _safeData[_safe];
   }
 
   // --- Methods ---
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function allowSAFE(uint256 _safe, address _usr, bool _ok) external safeAllowed(_safe) {
     address _owner = _safeData[_safe].owner;
     safeCan[_owner][_safe][_usr] = _ok;
     emit AllowSAFE(msg.sender, _safe, _usr, _ok);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function allowHandler(address _usr, bool _ok) external {
     handlerCan[msg.sender][_usr] = _ok;
     emit AllowHandler(msg.sender, _usr, _ok);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function openSAFE(bytes32 _cType, address _usr) external returns (uint256 _id) {
     if (_usr == address(0)) revert ZeroAddress();
 
@@ -136,7 +136,7 @@ contract HaiSafeManager is IHaiSafeManager {
     return _safeId;
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function transferSAFEOwnership(uint256 _safe, address _dst) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     if (_dst == _sData.owner) revert AlreadySafeOwner();
@@ -145,7 +145,7 @@ contract HaiSafeManager is IHaiSafeManager {
     emit InitiateTransferSAFEOwnership(msg.sender, _safe, _dst);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function acceptSAFEOwnership(uint256 _safe) external {
     SAFEData memory _sData = _safeData[_safe];
     address _newOwner = _sData.pendingOwner;
@@ -165,7 +165,7 @@ contract HaiSafeManager is IHaiSafeManager {
     emit TransferSAFEOwnership(_prevOwner, _safe, _newOwner);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function modifySAFECollateralization(
     uint256 _safe,
     int256 _deltaCollateral,
@@ -178,28 +178,28 @@ contract HaiSafeManager is IHaiSafeManager {
     emit ModifySAFECollateralization(msg.sender, _safe, _deltaCollateral, _deltaDebt);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function transferCollateral(uint256 _safe, address _dst, uint256 _wad) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     ISAFEEngine(safeEngine).transferCollateral(_sData.collateralType, _sData.safeHandler, _dst, _wad);
     emit TransferCollateral(msg.sender, _safe, _dst, _wad);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function transferCollateral(bytes32 _cType, uint256 _safe, address _dst, uint256 _wad) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     ISAFEEngine(safeEngine).transferCollateral(_cType, _sData.safeHandler, _dst, _wad);
     emit TransferCollateral(msg.sender, _cType, _safe, _dst, _wad);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function transferInternalCoins(uint256 _safe, address _dst, uint256 _rad) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     ISAFEEngine(safeEngine).transferInternalCoins(_sData.safeHandler, _dst, _rad);
     emit TransferInternalCoins(msg.sender, _safe, _dst, _rad);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function quitSystem(uint256 _safe, address _dst) external safeAllowed(_safe) handlerAllowed(_dst) {
     SAFEData memory _sData = _safeData[_safe];
     ISAFEEngine.SAFE memory _safeInfo = ISAFEEngine(safeEngine).safes(_sData.collateralType, _sData.safeHandler);
@@ -215,7 +215,7 @@ contract HaiSafeManager is IHaiSafeManager {
     emit QuitSystem(msg.sender, _safe, _dst);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function enterSystem(address _src, uint256 _safe) external handlerAllowed(_src) safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     ISAFEEngine.SAFE memory _safeInfo = ISAFEEngine(safeEngine).safes(_sData.collateralType, _sData.safeHandler);
@@ -227,7 +227,7 @@ contract HaiSafeManager is IHaiSafeManager {
     emit EnterSystem(msg.sender, _src, _safe);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function moveSAFE(uint256 _safeSrc, uint256 _safeDst) external safeAllowed(_safeSrc) safeAllowed(_safeDst) {
     SAFEData memory _srcData = _safeData[_safeSrc];
     SAFEData memory _dstData = _safeData[_safeDst];
@@ -245,21 +245,21 @@ contract HaiSafeManager is IHaiSafeManager {
     emit MoveSAFE(msg.sender, _safeSrc, _safeDst);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function addSAFE(uint256 _safe) external {
     SAFEData memory _sData = _safeData[_safe];
     _usrSafes[msg.sender].add(_safe);
     _usrSafesPerCollat[msg.sender][_sData.collateralType].add(_safe);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function removeSAFE(uint256 _safe) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     _usrSafes[_sData.owner].remove(_safe);
     _usrSafesPerCollat[_sData.owner][_sData.collateralType].remove(_safe);
   }
 
-  /// @inheritdoc IHaiSafeManager
+  /// @inheritdoc IAzosSafeManager
   function protectSAFE(uint256 _safe, address _liquidationEngine, address _saviour) external safeAllowed(_safe) {
     SAFEData memory _sData = _safeData[_safe];
     ILiquidationEngine(_liquidationEngine).protectSAFE(_sData.collateralType, _sData.safeHandler, _saviour);

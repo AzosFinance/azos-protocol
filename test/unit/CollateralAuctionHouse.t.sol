@@ -9,12 +9,12 @@ import {IDelayedOracle} from '@interfaces/oracles/IDelayedOracle.sol';
 import {IDisableable} from '@interfaces/utils/IDisableable.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {IModifiable} from '@interfaces/utils/IModifiable.sol';
-import {HaiTest, stdStorage, StdStorage} from '@test/utils/HaiTest.t.sol';
+import {AzosTest, stdStorage, StdStorage} from '@test/utils/AzosTest.t.sol';
 
 import {Math, RAY, WAD} from '@libraries/Math.sol';
 import {Assertions} from '@libraries/Assertions.sol';
 
-contract Base is HaiTest {
+contract Base is AzosTest {
   using stdStorage for StdStorage;
 
   struct CollateralAuction {
