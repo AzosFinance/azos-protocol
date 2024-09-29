@@ -144,7 +144,7 @@ contract DeployTestnet is TestnetParams, Deploy {
   }
 
   function setupEnvironment() public virtual override updateParams {
-    delegate = 0x8125aAa8F7912aEb500553a5b1710BB16f7A6C65; // EOA
+    delegate = 0xd9Bc04Fb848e0bF3EfCFc7e43039cb37F281E4B3; // EOA
 
     // Deploy oracle factories
     denominatedOracleFactory = new DenominatedOracleFactory();
