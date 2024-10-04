@@ -6,6 +6,7 @@ ds-test/=node_modules/ds-test/src/
 
 @contracts/=src/contracts/
 @interfaces/=src/interfaces/
+@azosinterfaces/=src/azos/interfaces/
 @libraries/=src/libraries/
 @script/=script/
 @test/=test/
