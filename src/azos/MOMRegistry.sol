@@ -1,5 +1,13 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
+
+/////////////////////////////////
+//      /\                     //
+//     /  \    _______  ___    //
+//    / /\ \  |_  / _ \/ __|   //
+//   / ____ \  / / (_) \__ \   //
+//  /_/    \_\/___\___/|___/   //
+/////////////////////////////////
 
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
@@ -26,8 +34,8 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   mapping(address module => uint256 coinIssuance) public coinIssuances;
   mapping(address module => uint256 protocolLimit) public protocolLimits;
   mapping(address module => uint256 coinLimit) public coinLimits;
-  mapping(uint256 momId => address module) public modules;
   mapping(address module => bool isMOM) public isMOM;
+  mapping(uint256 momId => address module) public modules;
 
   constructor(
     address _systemCoin,
@@ -65,12 +73,7 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   }
 
   /// @inheritdoc IMOMRegistry
-  function registerContract(address protocolContract, bool status) external isAuthorized {
-    // Implementation needed
-  }
-
-  /// @inheritdoc IMOMRegistry
-  function mintProtocolToken(uint256 amount) public onlyMOM {
+  function mintProtocolToken(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
     uint256 debt = protocolIssuances[module];
     if (!_enforceProtocolMint(module, amount, debt)) revert ProtocolMint();
@@ -78,10 +81,11 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     protocolIssuances[module] = debt;
     protocolToken.mint(module, amount);
     emit MintedProtocolToken(module, amount, debt);
+    return true;
   }
 
   /// @inheritdoc IMOMRegistry
-  function burnProtocolToken(uint256 amount) public onlyMOM {
+  function burnProtocolToken(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
     uint256 debt = protocolIssuances[module];
     if (!_enforceProtocolBurn(amount, debt)) revert ProtocolBurn();
@@ -90,10 +94,11 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     protocolToken.transferFrom(module, address(this), amount);
     protocolToken.burn(amount);
     emit BurnedProtocolToken(module, amount, debt);
+    return true;
   }
 
   /// @inheritdoc IMOMRegistry
-  function mintCoin(uint256 amount) public onlyMOM {
+  function mintCoin(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
     uint256 wadRedemptionPrice = oracleRelayer.redemptionPrice() / RAY_TO_WAD;
     if (wadRedemptionPrice == 0) revert InvalidRedemptionPrice();
@@ -104,10 +109,11 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     coinIssuances[module] = coinDebt;
     systemCoin.mint(module, amount);
     emit MintedCoin(module, amount, coinDebt);
+    return true;
   }
 
   /// @inheritdoc IMOMRegistry
-  function burnCoin(uint256 amount) public onlyMOM {
+  function burnCoin(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
     uint256 wadRedemptionPrice = oracleRelayer.redemptionPrice() / RAY_TO_WAD;
     if (wadRedemptionPrice == 0) revert InvalidRedemptionPrice();
@@ -120,24 +126,25 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     if (!success) revert TransferFailed();
     systemCoin.burn(amount);
     emit BurnedCoin(module, amount, coinDebt);
+    return true;
   }
 
-  function _enforceProtocolMint(address module, uint256 amount, uint256 debt) internal view returns (bool) {
+  function _enforceProtocolMint(address module, uint256 amount, uint256 debt) private view returns (bool) {
     if (debt + amount > protocolLimits[module]) return false;
     return true;
   }
 
-  function _enforceProtocolBurn(uint256 amount, uint256 debt) internal pure returns (bool) {
+  function _enforceProtocolBurn(uint256 amount, uint256 debt) private pure returns (bool) {
     if (debt - amount > 0) return false;
     return true;
   }
 
-  function _enforceCoinMint(address module, uint256 amount, uint256 adjustedDebt) internal view returns (bool) {
+  function _enforceCoinMint(address module, uint256 amount, uint256 adjustedDebt) private view returns (bool) {
     if (adjustedDebt + amount > coinLimits[module]) return false;
     return true;
   }
 
-  function _enforceCoinBurn(uint256 amount, uint256 adjustedDebt) internal pure returns (bool) {
+  function _enforceCoinBurn(uint256 amount, uint256 adjustedDebt) private pure returns (bool) {
     if (adjustedDebt - amount > 0) return false;
     return true;
   }

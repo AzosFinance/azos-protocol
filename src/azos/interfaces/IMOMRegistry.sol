@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 import {IProtocolToken} from '@interfaces/tokens/IProtocolToken.sol';
@@ -59,31 +59,25 @@ interface IMOMRegistry {
   /// @param coinLimit The new maximum issuance limit for system coins
   function adjustMOM(address module, uint256 protocolLimit, uint256 coinLimit) external;
 
-  /// @notice Registers a contract with the MOMRegistry
-  /// @dev Only callable by authorized accounts.
-  /// @param protocolContract The address of the contract to register
-  /// @param status The status to set for the contract
-  function registerContract(address protocolContract, bool status) external;
-
   /// @notice Mints protocol tokens for a registered MOM
   /// @dev Only callable by registered MOMs. Enforces issuance limits.
   /// @param amount The amount of protocol tokens to mint
-  function mintProtocolToken(uint256 amount) external;
+  function mintProtocolToken(uint256 amount) external returns (bool);
 
   /// @notice Burns protocol tokens for a registered MOM
   /// @dev Only callable by registered MOMs. Requires prior token approval.
   /// @param amount The amount of protocol tokens to burn
-  function burnProtocolToken(uint256 amount) external;
+  function burnProtocolToken(uint256 amount) external returns (bool);
 
   /// @notice Mints system coins for a registered MOM
   /// @dev Only callable by registered MOMs. Enforces issuance limits.
   /// @param amount The amount of system coins to mint
-  function mintCoin(uint256 amount) external;
+  function mintCoin(uint256 amount) external returns (bool);
 
   /// @notice Burns system coins for a registered MOM
   /// @dev Only callable by registered MOMs. Requires prior coin approval.
   /// @param amount The amount of system coins to burn
-  function burnCoin(uint256 amount) external;
+  function burnCoin(uint256 amount) external returns (bool);
 
   /// @notice Executes an arbitrary low-level call
   /// @dev Only callable by authorized accounts. Use with extreme caution.
