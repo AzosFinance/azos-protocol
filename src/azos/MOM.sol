@@ -24,8 +24,8 @@ abstract contract MOM is Authorizable, IMOM {
   IERC20 internal immutable _token;
 
   uint256 internal _actionsCounter;
-  mapping(uint256 logicId => address logicContract) internal _actions;
-  mapping(uint256 logicId => bool isRegistered) internal _isActionRegistered;
+  mapping(uint256 actionId => address logicContract) internal _actions;
+  mapping(uint256 actionId => bool isRegistered) internal _isActionRegistered;
 
   constructor(IMOMRegistry registry, IERC20 token) Authorizable(address(registry)) {
     _registry = registry;
@@ -42,9 +42,9 @@ abstract contract MOM is Authorizable, IMOM {
     _actionsCounter++;
   }
 
-  function deRegisterAction(uint256 logicId) external virtual isRegistry {
-    _isActionRegistered[logicId] = false;
-    emit ActionDeregistered(_actions[logicId], logicId);
+  function deRegisterAction(uint256 actionId) external virtual isRegistry {
+    _isActionRegistered[actionId] = false;
+    emit ActionDeregistered(_actions[actionId], actionId);
   }
 
   function _mintCoins(uint256 amount) internal virtual returns (bool success) {
