@@ -15,6 +15,7 @@ import {IProtocolToken} from '@interfaces/tokens/IProtocolToken.sol';
 import {IOracleRelayer} from '@interfaces/IOracleRelayer.sol';
 import {Math, RAY, WAD} from '@libraries/Math.sol';
 import {IMOMRegistry} from '@azosinterfaces/IMOMRegistry.sol';
+import {IMOM} from '@azosinterfaces/IMOM.sol';
 
 /// @title Market Operations Module Registry
 /// @notice This contract is used to register and manage Market Operations Modules (MOMs). It is authorized on both the system coin and protocol token
@@ -150,13 +151,32 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   }
 
   /// @inheritdoc IMOMRegistry
+  function getModuleData(address module)
+    external
+    view
+    returns (uint256 protocolIssuance, uint256 coinIssuance, uint256 protocolLimit, uint256 coinLimit)
+  {
+    return (protocolIssuances[module], coinIssuances[module], protocolLimits[module], coinLimits[module]);
+  }
+
+  /// @inheritdoc IMOMRegistry
   function execute(
-    address _to,
-    uint256 _value,
-    bytes calldata _data
-  ) external isAuthorized returns (bool, bytes memory) {
-    (bool success, bytes memory result) = _to.call{value: _value}(_data);
-    return (success, result);
+    address[] calldata _tos,
+    uint256[] calldata _values,
+    bytes[] calldata _datas
+  ) external isAuthorized returns (bool[] memory, bytes[] memory) {
+    require(_tos.length == _values.length && _tos.length == _datas.length, "Array lengths must match");
+    
+    bool[] memory successes = new bool[](_tos.length);
+    bytes[] memory results = new bytes[](_tos.length);
+
+    for (uint256 i = 0; i < _tos.length; i++) {
+      (bool success, bytes memory result) = _tos[i].call{value: _values[i]}(_datas[i]);
+      successes[i] = success;
+      results[i] = result;
+    }
+
+    return (successes, results);
   }
 
   /// @notice Restricts function access to registered Market Operations Modules (MOMs) or self

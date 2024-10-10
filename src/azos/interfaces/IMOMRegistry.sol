@@ -79,12 +79,23 @@ interface IMOMRegistry {
   /// @param amount The amount of system coins to burn
   function burnCoin(uint256 amount) external returns (bool);
 
-  /// @notice Executes an arbitrary low-level call
+  /// @notice Get all data associated with a specific module
+  /// @param module The address of the module to query
+  /// @return protocolIssuance The protocol token issuance for the module
+  /// @return coinIssuance The system coin issuance for the module
+  /// @return protocolLimit The protocol token limit for the module
+  /// @return coinLimit The system coin limit for the module
+  function getModuleData(address module)
+    external
+    view
+    returns (uint256 protocolIssuance, uint256 coinIssuance, uint256 protocolLimit, uint256 coinLimit);
+
+  /// @notice Executes multiple arbitrary low-level calls
   /// @dev Only callable by authorized accounts. Use with extreme caution.
-  /// @param _to The target address for the call
-  /// @param _value The amount of ETH to send with the call
-  /// @param _data The calldata to send
-  /// @return success Boolean indicating whether the call was successful
-  /// @return result The raw bytes returned from the call
-  function execute(address _to, uint256 _value, bytes calldata _data) external returns (bool, bytes memory);
+  /// @param _tos The target addresses for the calls
+  /// @param _values The amounts of ETH to send with each call
+  /// @param _datas The calldatas to send
+  /// @return successes Array of booleans indicating whether each call was successful
+  /// @return results Array of raw bytes returned from each call
+  function execute(address[] calldata _tos, uint256[] calldata _values, bytes[] calldata _datas) external returns (bool[] memory, bytes[] memory);
 }

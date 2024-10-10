@@ -14,8 +14,9 @@ import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {IMOMRegistry} from '@azosinterfaces/IMOMRegistry.sol';
 import {IMOM} from '@azosinterfaces/IMOM.sol';
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 
-abstract contract MOM is Authorizable, IMOM {
+abstract contract MOM is Authorizable, IMOM, Pausable {
   // Implementations of MOM will rely heavily on delegatecall therefore do not alter the order of these variables
   // The storage layout of action contracts and MOM implementations must match perfectly
   // Utilize constants and immutable variables in action contracts as they persist in bytecode not in storage
@@ -27,30 +28,18 @@ abstract contract MOM is Authorizable, IMOM {
   mapping(uint256 actionId => address logicContract) internal _actions;
   mapping(uint256 actionId => bool isRegistered) internal _isActionRegistered;
 
-  constructor(IMOMRegistry registry, IERC20 token) Authorizable(address(registry)) {
+  constructor(IMOMRegistry registry, IERC20 token, address pauser) Authorizable(address(registry)) {
+    _addAuthorization(pauser);
     _registry = registry;
     _systemCoin = registry.systemCoin();
     _token = token;
     _actionsCounter = 1;
   }
-
-  function registerAction(address actionContract) external virtual isRegistry {
-    if (actionContract == address(0)) revert InvalidAction();
-    _actions[_actionsCounter] = actionContract;
-    _isActionRegistered[_actionsCounter] = true;
-    emit ActionRegistered(actionContract, _actionsCounter);
-    _actionsCounter++;
-  }
-
-  function deRegisterAction(uint256 actionId) external virtual isRegistry {
-    _isActionRegistered[actionId] = false;
-    emit ActionDeregistered(_actions[actionId], actionId);
-  }
-
+  
   function _mintCoins(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintCoin(amount);
   }
-
+  
   function _mintProtocolTokens(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintProtocolToken(amount);
   }
@@ -65,6 +54,79 @@ abstract contract MOM is Authorizable, IMOM {
 
   function _getCoinBalance() internal view virtual returns (uint256) {
     return _systemCoin.balanceOf(address(this));
+  }
+
+  function _getProtocolTokenBalance() internal view virtual returns (uint256) {
+    return _token.balanceOf(address(this));
+  }
+
+  function _getCoinDebt() internal view virtual returns (uint256) {
+    return _registry.coinIssuances(address(this));
+  }
+
+  function _getProtocolTokenDebt() internal view virtual returns (uint256) {
+    return _registry.protocolIssuances(address(this));
+  }
+
+  function _getCoinLimit() internal view virtual returns (uint256) {
+    return _registry.coinLimits(address(this));
+  }
+  
+  function _getProtocolTokenLimit() internal view virtual returns (uint256) {
+    return _registry.protocolLimits(address(this));
+  }
+
+  function _getModuleData()
+    internal
+    view
+    virtual
+    returns (uint256 protocolIssuance, uint256 coinIssuance, uint256 protocolLimit, uint256 coinLimit)
+  {
+    return _registry.getModuleData(address(this));
+  }
+
+    // @inheritdoc IMOM
+  function registerAction(address actionContract) external virtual isRegistry {
+    if (actionContract == address(0)) revert InvalidAction();
+    _actions[_actionsCounter] = actionContract;
+    _isActionRegistered[_actionsCounter] = true;
+    emit ActionRegistered(actionContract, _actionsCounter);
+    _actionsCounter++;
+  }
+
+  // @inheritdoc IMOM
+  function deRegisterAction(uint256 actionId) external virtual isRegistry {
+    _isActionRegistered[actionId] = false;
+    emit ActionDeregistered(_actions[actionId], actionId);
+  }
+
+  // @inheritdoc IMOM
+  function pause() external virtual isAuthorized {
+    _pause();
+  }
+
+  /// @inheritdoc IMOM
+  function windDown() external virtual override isRegistry whenPaused {
+    uint256 coinBalance = _getCoinBalance();
+    uint256 protocolTokenBalance = _getProtocolTokenBalance();
+    (uint256 protocolIssuance, uint256 coinIssuance, uint256 protocolLimit, uint256 coinLimit) = _getModuleData();
+    uint256 remainingCoinDebt;
+    uint256 remainingTokenDebt;
+    if (coinBalance > coinIssuance) {
+      _burnCoins(coinIssuance);
+      remainingCoinDebt = 0;
+    } else {
+      _burnCoins(coinBalance);
+      remainingCoinDebt = coinIssuance - coinBalance;
+    }
+    if (protocolTokenBalance > protocolIssuance) {
+      _burnProtocolTokens(protocolIssuance);
+      remainingTokenDebt = 0;
+    } else {
+      _burnProtocolTokens(protocolTokenBalance);
+      remainingTokenDebt = protocolIssuance - protocolTokenBalance;
+    }
+    emit WindDown(coinBalance, protocolTokenBalance, remainingCoinDebt, remainingTokenDebt);
   }
 
   /// @inheritdoc IMOM
