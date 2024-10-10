@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
 /////////////////////////////////
@@ -101,7 +101,7 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   /// @inheritdoc IMOMRegistry
   function mintCoin(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
-    uint256 wadRedemptionPrice = oracleRelayer.redemptionPrice() / RAY_TO_WAD;
+    uint256 wadRedemptionPrice = getRedemptionPrice();
     if (wadRedemptionPrice == 0) revert InvalidRedemptionPrice();
     uint256 adjustedDebt = amount.wmul(wadRedemptionPrice);
     uint256 coinDebt = coinIssuances[module];
@@ -116,7 +116,7 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   /// @inheritdoc IMOMRegistry
   function burnCoin(uint256 amount) public onlyMOM returns (bool) {
     address module = msg.sender;
-    uint256 wadRedemptionPrice = oracleRelayer.redemptionPrice() / RAY_TO_WAD;
+    uint256 wadRedemptionPrice = getRedemptionPrice();
     if (wadRedemptionPrice == 0) revert InvalidRedemptionPrice();
     uint256 adjustedDebt = amount.wmul(wadRedemptionPrice);
     uint256 coinDebt = coinIssuances[module];
@@ -128,6 +128,11 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     systemCoin.burn(amount);
     emit BurnedCoin(module, amount, coinDebt);
     return true;
+  }
+
+  /// @notice Returns the normalized redemption price of the system coin
+  function getRedemptionPrice() public returns (uint256) {
+    return oracleRelayer.redemptionPrice() / RAY_TO_WAD;
   }
 
   function _enforceProtocolMint(address module, uint256 amount, uint256 debt) private view returns (bool) {

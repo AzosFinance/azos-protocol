@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: MIT
+// SPDX-License-Identifier: UNLICENSED
 
 /////////////////////////////////
 //      /\                     //
@@ -20,9 +20,10 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   // Implementations of MOM will rely heavily on delegatecall therefore do not alter the order of these variables
   // The storage layout of action contracts and MOM implementations must match perfectly
   // Utilize constants and immutable variables in action contracts as they persist in bytecode not in storage
-  IMOMRegistry internal immutable _registry;
-  IERC20 internal immutable _systemCoin;
-  IERC20 internal immutable _token;
+  // Do not use constants or immutable variables for state variables in MOM implementations
+  IMOMRegistry internal _registry;
+  IERC20 internal _systemCoin;
+  IERC20 internal _token;
 
   uint256 internal _actionsCounter;
   mapping(uint256 actionId => address logicContract) internal _actions;
@@ -38,18 +39,22 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   
   function _mintCoins(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintCoin(amount);
+    if (!success) revert MintFailed();
   }
   
   function _mintProtocolTokens(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintProtocolToken(amount);
+    if (!success) revert MintFailed();
   }
 
   function _burnCoins(uint256 amount) internal virtual returns (bool success) {
     success = _registry.burnCoin(amount);
+    if (!success) revert BurnFailed();
   }
 
   function _burnProtocolTokens(uint256 amount) internal virtual returns (bool success) {
     success = _registry.burnProtocolToken(amount);
+    if (!success) revert BurnFailed();
   }
 
   function _getCoinBalance() internal view virtual returns (uint256) {
@@ -64,7 +69,7 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
     return _registry.coinIssuances(address(this));
   }
 
-  function _getProtocolTokenDebt() internal view virtual returns (uint256) {
+  function _getTokenDebt() internal view virtual returns (uint256) {
     return _registry.protocolIssuances(address(this));
   }
 
@@ -109,7 +114,8 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   function windDown() external virtual override isRegistry whenPaused {
     uint256 coinBalance = _getCoinBalance();
     uint256 protocolTokenBalance = _getProtocolTokenBalance();
-    (uint256 protocolIssuance, uint256 coinIssuance, uint256 protocolLimit, uint256 coinLimit) = _getModuleData();
+    uint256 protocolIssuance = _getTokenDebt();
+    uint256 coinIssuance = _getCoinDebt();
     uint256 remainingCoinDebt;
     uint256 remainingTokenDebt;
     if (coinBalance > coinIssuance) {

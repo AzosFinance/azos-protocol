@@ -1,3 +1,13 @@
+// SPDX-License-Identifier: UNLICENSED
+
+/////////////////////////////////
+//      /\                     //
+//     /  \    _______  ___    //
+//    / /\ \  |_  / _ \/ __|   //
+//   / ____ \  / / (_) \__ \   //
+//  /_/    \_\/___\___/|___/   //
+/////////////////////////////////
+
 pragma solidity ^0.8.20;
 
 import {MOM, IMOMRegistry, IERC20} from '@azos/MOM.sol';
@@ -15,7 +25,7 @@ contract StabilityMOM is MOM, IStabilityMOM {
   }
 
   // @inheritdoc IMOM
-  function delegateAction(uint256[] calldata actionIds, bytes[] calldata datas) external returns (bool[] memory) {
+  function delegateAction(uint256[] calldata actionIds, bytes[] calldata datas) external whenNotPaused returns (bool[] memory) {
     if (actionIds.length != datas.length) revert ArraysMustHaveSameLength();
     
     bool[] memory successes = new bool[](actionIds.length);

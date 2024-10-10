@@ -1,3 +1,13 @@
+// SPDX-License-Identifier: UNLICENSED
+
+/////////////////////////////////
+//      /\                     //
+//     /  \    _______  ___    //
+//    / /\ \  |_  / _ \/ __|   //
+//   / ____ \  / / (_) \__ \   //
+//  /_/    \_\/___\___/|___/   //
+/////////////////////////////////
+
 pragma solidity ^0.8.20;
 
 import {StabilityMOM, IMOMRegistry, IERC20} from '@azos/StabilityMOM.sol';
@@ -7,12 +17,8 @@ contract StabilitySwapAero is StabilityMOM {
   IRouter private immutable _router;
 
   constructor(
-    address logicContract,
-    IMOMRegistry registry,
-    IERC20 token,
-    IRouter router,
-    address pauser
-  ) StabilityMOM(logicContract, registry, token, pauser) {
+    IRouter router
+  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20(address(0)), address(0)) {
     _router = router;
   }
 

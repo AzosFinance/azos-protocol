@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+
 pragma solidity ^0.8.20;
 
 import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
@@ -33,6 +35,12 @@ interface IMOM {
 
   /// @notice Error thrown when an invalid action is provided
   error InvalidAction();
+
+  /// @notice Error thrown when a mint operation fails
+  error MintFailed();
+
+  /// @notice Error thrown when a burn operation fails
+  error BurnFailed();
 
   /// @notice Registers a new action contract
   /// @param actionContract The address of the action contract to register
