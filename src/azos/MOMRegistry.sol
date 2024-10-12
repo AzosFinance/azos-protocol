@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-/////////////////////////////////
-//      /\                     //
-//     /  \    _______  ___    //
-//    / /\ \  |_  / _ \/ __|   //
-//   / ____ \  / / (_) \__ \   //
-//  /_/    \_\/___\___/|___/   //
-/////////////////////////////////
+/*
+      /\                   
+     /  \    _______  ___  
+    / /\ \  |_  / _ \/ __| 
+   / ____ \  / / (_) \__ \ 
+  /_/    \_\/___\___/|___/ 
+*/
 
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
@@ -170,8 +170,8 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     uint256[] calldata _values,
     bytes[] calldata _datas
   ) external isAuthorized returns (bool[] memory, bytes[] memory) {
-    require(_tos.length == _values.length && _tos.length == _datas.length, "Array lengths must match");
-    
+    if (_tos.length != _values.length || _tos.length != _datas.length) revert ArraysMustHaveSameLength();
+
     bool[] memory successes = new bool[](_tos.length);
     bytes[] memory results = new bytes[](_tos.length);
 

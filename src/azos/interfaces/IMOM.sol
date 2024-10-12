@@ -66,5 +66,4 @@ interface IMOM {
   /// @notice Winds down the MOM, burning coins and protocol tokens
   /// @dev Can only be called by the registry when the contract is paused
   function windDown() external;
-
 }

@@ -1,19 +1,19 @@
 // SPDX-License-Identifier: UNLICENSED
 
-/////////////////////////////////
-//      /\                     //
-//     /  \    _______  ___    //
-//    / /\ \  |_  / _ \/ __|   //
-//   / ____ \  / / (_) \__ \   //
-//  /_/    \_\/___\___/|___/   //
-/////////////////////////////////
+/*
+      /\                   
+     /  \    _______  ___  
+    / /\ \  |_  / _ \/ __| 
+   / ____ \  / / (_) \__ \ 
+  /_/    \_\/___\___/|___/ 
+*/
 
 pragma solidity ^0.8.20;
 
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {IMOMRegistry} from '@azosinterfaces/IMOMRegistry.sol';
 import {IMOM} from '@azosinterfaces/IMOM.sol';
-import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
+import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
 import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
 
 abstract contract MOM is Authorizable, IMOM, Pausable {
@@ -22,26 +22,28 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   // Utilize constants and immutable variables in action contracts as they persist in bytecode not in storage
   // Do not use constants or immutable variables for state variables in MOM implementations
   IMOMRegistry internal _registry;
-  IERC20 internal _systemCoin;
-  IERC20 internal _token;
+  IERC20Metadata internal _asset;
+  IERC20Metadata internal _token;
+  IERC20Metadata internal _coin;
 
   uint256 internal _actionsCounter;
   mapping(uint256 actionId => address logicContract) internal _actions;
   mapping(uint256 actionId => bool isRegistered) internal _isActionRegistered;
 
-  constructor(IMOMRegistry registry, IERC20 token, address pauser) Authorizable(address(registry)) {
+  constructor(IMOMRegistry registry, IERC20Metadata asset_, address pauser) Authorizable(address(registry)) {
     _addAuthorization(pauser);
     _registry = registry;
-    _systemCoin = registry.systemCoin();
-    _token = token;
+    _asset = asset_;
+    _token = _registry.protocolToken();
+    _coin = _registry.systemCoin();
     _actionsCounter = 1;
   }
-  
+
   function _mintCoins(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintCoin(amount);
     if (!success) revert MintFailed();
   }
-  
+
   function _mintProtocolTokens(uint256 amount) internal virtual returns (bool success) {
     success = _registry.mintProtocolToken(amount);
     if (!success) revert MintFailed();
@@ -58,7 +60,7 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   }
 
   function _getCoinBalance() internal view virtual returns (uint256) {
-    return _systemCoin.balanceOf(address(this));
+    return _asset.balanceOf(address(this));
   }
 
   function _getProtocolTokenBalance() internal view virtual returns (uint256) {
@@ -76,9 +78,14 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   function _getCoinLimit() internal view virtual returns (uint256) {
     return _registry.coinLimits(address(this));
   }
-  
+
   function _getProtocolTokenLimit() internal view virtual returns (uint256) {
     return _registry.protocolLimits(address(this));
+  }
+
+  // MOM implementations must override this function
+  function _checkpointEquity() internal view virtual returns (uint256 equity) {
+    return 0;
   }
 
   function _getModuleData()
@@ -90,7 +97,7 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
     return _registry.getModuleData(address(this));
   }
 
-    // @inheritdoc IMOM
+  // @inheritdoc IMOM
   function registerAction(address actionContract) external virtual isRegistry {
     if (actionContract == address(0)) revert InvalidAction();
     _actions[_actionsCounter] = actionContract;

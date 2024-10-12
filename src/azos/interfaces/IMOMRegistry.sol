@@ -25,6 +25,7 @@ interface IMOMRegistry {
   error TransferFailed();
   error InvalidModule();
   error MOMWindDown();
+  error ArraysMustHaveSameLength();
 
   // Constants
   function RAY_TO_WAD() external view returns (uint256);
@@ -97,5 +98,9 @@ interface IMOMRegistry {
   /// @param _datas The calldatas to send
   /// @return successes Array of booleans indicating whether each call was successful
   /// @return results Array of raw bytes returned from each call
-  function execute(address[] calldata _tos, uint256[] calldata _values, bytes[] calldata _datas) external returns (bool[] memory, bytes[] memory);
+  function execute(
+    address[] calldata _tos,
+    uint256[] calldata _values,
+    bytes[] calldata _datas
+  ) external returns (bool[] memory, bytes[] memory);
 }
