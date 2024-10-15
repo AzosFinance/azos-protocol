@@ -5,6 +5,7 @@ import '@script/Contracts.s.sol';
 import '@script/Params.s.sol';
 import '@script/Registry.s.sol';
 
+// #todo Add the MOMRegistry, StabilityMOM and StableSwapAction deployment, authorizations and registrations
 import {TickMath} from '@uniswap/v3-core/contracts/libraries/TickMath.sol';
 
 abstract contract Common is Contracts, Params {
@@ -13,7 +14,7 @@ abstract contract Common is Contracts, Params {
 
   function deployTokens() public updateParams {
     systemCoin = new SystemCoin('ZAI Impact Backed', 'ZAI');
-    protocolToken = new ProtocolToken('Protocol Token', 'AZOS');
+    protocolToken = new ProtocolToken('Azos Protocol', 'AZOS');
   }
 
   function deployGovernance() public updateParams {
@@ -215,6 +216,7 @@ abstract contract Common is Contracts, Params {
     }
   }
 
+  // #todo track down and set the pool initialization correctly
   function _deployUniV3Pool(
     address _uniV3Factory,
     address _tokenA,

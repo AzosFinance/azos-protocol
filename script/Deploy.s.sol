@@ -78,6 +78,7 @@ contract DeployMainnet is MainnetParams, Deploy {
     _deployerPk = uint256(vm.envBytes32('OP_MAINNET_DEPLOYER_PK'));
   }
 
+  // #todo setup the oracles and the Uniswap contract addresses
   function setupEnvironment() public virtual override updateParams {
     // Deploy oracle factories
     chainlinkRelayerFactory = new ChainlinkRelayerFactory(OP_CHAINLINK_SEQUENCER_UPTIME_FEED);
@@ -140,7 +141,7 @@ contract DeployMainnet is MainnetParams, Deploy {
 
 contract DeployTestnet is TestnetParams, Deploy {
   function setUp() public virtual {
-    _deployerPk = uint256(vm.envBytes32('OP_SEPOLIA_DEPLOYER_PK'));
+    _deployerPk = uint256(vm.envBytes32('BASE_SEPOLIA_DEPLOYER_PK'));
   }
 
   function setupEnvironment() public virtual override updateParams {
@@ -156,31 +157,32 @@ contract DeployTestnet is TestnetParams, Deploy {
     systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
 
     // Test tokens
-    collateral[WETH] = IERC20Metadata(OP_WETH);
-    collateral[OP] = IERC20Metadata(OP_OPTIMISM);
-    collateral[WBTC] = new MintableERC20('Wrapped BTC', 'wBTC', 8);
-    collateral[STONES] = new MintableERC20('Stones', 'STN', 3);
-    collateral[TOTEM] = new MintableERC20('Totem', 'TTM', 0);
+    collateral[GTC_ETH] = new MintableERC20('Gitcoin Ethereum', 'gtcETH', 18);
+    collateral[CHAR] = new MintableERC20('Biochar Credits', 'CHAR', 18);
+    collateral[KLIMA] = new MintableERC20('Klima', 'KLIMA', 18);
+    collateral[GLOUSD] = new MintableERC20('Glo Dollar', 'GLOUSD', 18);
+    collateral[CELO] = new MintableERC20('Celo', 'CELO', 18);
 
-    // Hardcoded feeds
-    IBaseOracle _ethUSDPriceFeed = new HardcodedOracle('ETH / USD', 2000e18);
-    IBaseOracle _opUSDPriceFeed = new HardcodedOracle('OP / USD', 4.2e18);
-    IBaseOracle _wbtcUsdOracle = new HardcodedOracle('WBTC / USD', 45_000e18);
-    IBaseOracle _stonesOracle = new HardcodedOracle('STN / USD', 1e18);
-    IBaseOracle _totemOracle = new HardcodedOracle('TTM / USD', 100e18);
+    // Hardcoded feeds for new collateral tokens
+    IBaseOracle _gtcEthUsdOracle = new HardcodedOracle('GTC-ETH / USD', 2600e18);
+    IBaseOracle _charUsdOracle = new HardcodedOracle('CHAR / USD', 168.71e18);
+    IBaseOracle _klimaUsdOracle = new HardcodedOracle('KLIMA / USD', 1.67e18);
+    IBaseOracle _gloUsdOracle = new HardcodedOracle('GLOUSD / USD', 1e18);
+    IBaseOracle _celoUsdOracle = new HardcodedOracle('CELO / USD', 0.78e18);
 
-    delayedOracle[WETH] = delayedOracleFactory.deployDelayedOracle(_ethUSDPriceFeed, 1 hours);
-    delayedOracle[OP] = delayedOracleFactory.deployDelayedOracle(_opUSDPriceFeed, 1 hours);
-    delayedOracle[WBTC] = delayedOracleFactory.deployDelayedOracle(_wbtcUsdOracle, 1 hours);
-    delayedOracle[STONES] = delayedOracleFactory.deployDelayedOracle(_stonesOracle, 1 hours);
-    delayedOracle[TOTEM] = delayedOracleFactory.deployDelayedOracle(_totemOracle, 1 hours);
+    // Deploy delayed oracles for new collateral tokens
+    delayedOracle[GTC_ETH] = delayedOracleFactory.deployDelayedOracle(_gtcEthUsdOracle, 1 hours);
+    delayedOracle[CHAR] = delayedOracleFactory.deployDelayedOracle(_charUsdOracle, 1 hours);
+    delayedOracle[KLIMA] = delayedOracleFactory.deployDelayedOracle(_klimaUsdOracle, 1 hours);
+    delayedOracle[GLOUSD] = delayedOracleFactory.deployDelayedOracle(_gloUsdOracle, 1 hours);
+    delayedOracle[CELO] = delayedOracleFactory.deployDelayedOracle(_celoUsdOracle, 1 hours);
 
     // Setup collateral types
-    collateralTypes.push(WETH);
-    collateralTypes.push(OP);
-    collateralTypes.push(WBTC);
-    collateralTypes.push(STONES);
-    collateralTypes.push(TOTEM);
+    collateralTypes.push(GTC_ETH);
+    collateralTypes.push(CHAR);
+    collateralTypes.push(KLIMA);
+    collateralTypes.push(GLOUSD);
+    collateralTypes.push(CELO);
   }
 
   function setupPostEnvironment() public virtual override updateParams {

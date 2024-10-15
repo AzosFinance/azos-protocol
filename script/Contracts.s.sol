@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0
 pragma solidity 0.8.20;
 
+// #todo Add the MOMRegistry, StabilityMOM and StableSwapAction
 // --- Base Contracts ---
 import {SystemCoin, ISystemCoin} from '@contracts/tokens/SystemCoin.sol';
 import {ProtocolToken, IProtocolToken, ERC20Votes, Pausable} from '@contracts/tokens/ProtocolToken.sol';

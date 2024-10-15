@@ -15,6 +15,8 @@ import {ISwapRouter} from '@azos/interfaces/Uniswap/ISwapRouter.sol';
 
 contract StableSwapUniV3 is StabilityMOM {
   ISwapRouter public immutable router;
+  uint24 public constant poolFee = 3000;
+  uint160 public constant PRICE_LIMIT = 0;
 
   constructor(
     ISwapRouter router_
@@ -23,6 +25,18 @@ contract StableSwapUniV3 is StabilityMOM {
   }
 
   function action(bytes calldata data) external returns (bool) {
+    ISwapRouter.ExactInputSingleParams memory params;
+    (address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOutMin) = abi.decode(data, (address, address, uint256, uint256));
+    params = ISwapRouter.ExactInputSingleParams({
+      tokenIn: tokenIn,
+      tokenOut: tokenOut,
+      fee: poolFee,
+      recipient: address(this),
+      deadline: block.timestamp,
+      amountIn: amountIn,
+      amountOutMinimum: amountOutMin,
+      sqrtPriceLimitX96: 0
+    });
   }
 
   function _enforceRoute(address tokenIn, address tokenOut) internal view {
