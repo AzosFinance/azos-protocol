@@ -9,6 +9,7 @@ import {Script} from 'forge-std/Script.sol';
 import {Common} from '@script/Common.s.sol';
 import {TestnetParams} from '@script/TestnetParams.s.sol';
 import {MainnetParams} from '@script/MainnetParams.s.sol';
+import {ClaimableERC20} from "../src/contracts/for-test/ClaimableERC20.sol";
 
 abstract contract Deploy is Common, Script {
   function setupEnvironment() public virtual {}
@@ -157,14 +158,14 @@ contract DeployTestnet is TestnetParams, Deploy {
     systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
 
     // Test tokens
-    collateral[GTC_ETH] = new MintableERC20('Gitcoin Ethereum', 'gtcETH', 18);
-    collateral[CHAR] = new MintableERC20('Biochar Credits', 'CHAR', 18);
-    collateral[KLIMA] = new MintableERC20('Klima', 'KLIMA', 18);
-    collateral[GLOUSD] = new MintableERC20('Glo Dollar', 'GLOUSD', 18);
-    collateral[CELO] = new MintableERC20('Celo', 'CELO', 18);
+    collateral[GTC_ETH] = new ClaimableERC20('Gitcoin Ethereum', 'GTCETH', 18, 1);
+    collateral[CHAR] = new ClaimableERC20('Biochar Credits', 'CHAR', 18, 5);
+    collateral[KLIMA] = new ClaimableERC20('Klima', 'KLIMA', 18, 300);
+    collateral[GLOUSD] = new ClaimableERC20('Glo Dollar', 'GLOUSD', 18, 150);
+    collateral[CELO] = new ClaimableERC20('Celo', 'CELO', 18, 50);
 
     // Hardcoded feeds for new collateral tokens
-    IBaseOracle _gtcEthUsdOracle = new HardcodedOracle('GTC-ETH / USD', 2600e18);
+    IBaseOracle _gtcEthUsdOracle = new HardcodedOracle('GTCETH / USD', 2600e18);
     IBaseOracle _charUsdOracle = new HardcodedOracle('CHAR / USD', 168.71e18);
     IBaseOracle _klimaUsdOracle = new HardcodedOracle('KLIMA / USD', 1.67e18);
     IBaseOracle _gloUsdOracle = new HardcodedOracle('GLOUSD / USD', 1e18);
