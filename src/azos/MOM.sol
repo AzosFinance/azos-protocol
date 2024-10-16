@@ -22,11 +22,13 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   // Utilize constants and immutable variables in action contracts as they persist in bytecode not in storage
   // Do not use constants or immutable variables for state variables in MOM implementations
   IMOMRegistry internal _registry;
+  // #todo perhaps MOMs should not even be opinionated about external assets?
   IERC20Metadata internal _asset;
   IERC20Metadata internal _token;
   IERC20Metadata internal _coin;
 
   uint256 internal _actionsCounter;
+
   mapping(uint256 actionId => address logicContract) internal _actions;
   mapping(uint256 actionId => bool isRegistered) internal _isActionRegistered;
 
@@ -97,6 +99,7 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
     return _registry.getModuleData(address(this));
   }
 
+  // #todo Consider making the parameters an arbitrary bytes calldata array
   // @inheritdoc IMOM
   function registerAction(address actionContract) external virtual isRegistry {
     if (actionContract == address(0)) revert InvalidAction();
@@ -117,6 +120,7 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
     _pause();
   }
 
+  // #todo this is probably retarded
   /// @inheritdoc IMOM
   function windDown() external virtual override isRegistry whenPaused {
     uint256 coinBalance = _getCoinBalance();

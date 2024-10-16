@@ -46,6 +46,9 @@ interface IStabilityMOM {
   /// @notice Error thrown when the swap is invalid
   error InvalidSwap();
 
+  /// @notice Error thrown when the equity is invalid
+  error InvalidEquity();
+
   /// @notice Error thrown when the route is invalid
   error InvalidRoute();
 

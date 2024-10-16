@@ -6,6 +6,7 @@ import '@script/Params.s.sol';
 abstract contract TestnetParams is Contracts, Params {
   // --- Testnet Params ---
   uint256 constant OP_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
+  // #todo setup an admin safe on Base and change this address
   address constant OP_SEPOLIA_ADMIN_SAFE = 0xCAFd432b7EcAfff352D92fcB81c60380d437E99D;
 
   function _getEnvironmentParams() internal override {
@@ -17,6 +18,7 @@ abstract contract TestnetParams is Contracts, Params {
       globalDebtCeiling: 55_000_000 * RAD // initially disabled
     });
 
+    // change the minimum amount of surplus to transfer
     _accountingEngineParams = IAccountingEngine.AccountingEngineParams({
       surplusIsTransferred: 0, // surplus is auctioned
       surplusDelay: 1 days,
@@ -114,14 +116,24 @@ abstract contract TestnetParams is Contracts, Params {
     });
 
     // --- Collateral Default Params ---
+    // #todo check if collateralTypes has only our desired collaterals
     for (uint256 _i; _i < collateralTypes.length; _i++) {
       bytes32 _cType = collateralTypes[_i];
 
+      if (_cType != GLOUSD) {
       _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
         oracle: delayedOracle[_cType],
         safetyCRatio: 1.5e27, // 150%
         liquidationCRatio: 1.5e27 // 150%
       });
+      }
+      else {
+        _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
+          oracle: delayedOracle[_cType],
+          safetyCRatio: 1.11e26, // 111%
+          liquidationCRatio: 1.11e26 // 111%
+        });
+      }
 
       _taxCollectorCParams[_cType] = ITaxCollector.TaxCollectorCollateralParams({
         // NOTE: 42%/yr => 1.42^(1/yr) = 1 + 11,11926e-9
@@ -148,6 +160,7 @@ abstract contract TestnetParams is Contracts, Params {
     }
 
     // --- Collateral Specific Params ---
+    // #todo check the WETH params - I don't think we need these... these were special for pre-deployed tokens
     _oracleRelayerCParams[WETH].safetyCRatio = 1.35e27; // 135%
     _oracleRelayerCParams[WETH].liquidationCRatio = 1.35e27; // 135%
     _taxCollectorCParams[WETH].stabilityFee = RAY + 1.54713e18; // + 5%/yr
@@ -166,6 +179,7 @@ abstract contract TestnetParams is Contracts, Params {
       timelockMinDelay: 1 days // 86_400
     });
 
+    // #todo setup a testnet airdrop root
     _tokenDistributorParams = ITokenDistributor.TokenDistributorParams({
       root: 0x6fc714df6371f577a195c2bfc47da41aa0ea15bba2651df126f3713a232244be,
       totalClaimable: 1_000_000 * WAD, // 1M ZAI

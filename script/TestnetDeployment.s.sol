@@ -14,6 +14,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
    * @dev    This is used to import the deployed contracts to the test scripts
    */
   constructor() {
+    // #todo update collateral types to be correct
     // --- collateral types ---
     collateralTypes.push(WETH);
     collateralTypes.push(OP);
@@ -22,6 +23,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralTypes.push(TOTEM);
 
     // --- ERC20s ---
+    // #todo change our collateral assignments
     collateral[WETH] = IERC20Metadata(OP_WETH);
     collateral[OP] = IERC20Metadata(OP_OPTIMISM);
     collateral[WBTC] = IERC20Metadata(0xE6ff79DfcE1AC82AB0f420feabef7fA0B6113913);
@@ -57,6 +59,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralAuctionHouseFactory = CollateralAuctionHouseFactory(0xfFF2dfE073813BF85615b02F21411f032cad99f8);
 
     // --- per token contracts ---
+    // #todo set collateral join for new collateral types
     collateralJoin[WETH] = CollateralJoin(0x0CC62FF2582485a71b5d556F454D0cEA167d9520);
     collateralAuctionHouse[WETH] = CollateralAuctionHouse(0xD63373c3BC20F23386009e4aeac56F7f132E16aB);
 
@@ -90,6 +93,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     rewardedActions = RewardedActions(0x5A4faBf474b572cD4189B03cE97235FC4d4636e6);
 
     // --- oracles ---
+    // #todo change the oracles to the correct ones for our collateral
     systemCoinOracle = IBaseOracle(0xbD96dDD370E30a0F0C4318aE21EA9DdCD5DBB863); // hardcoded oracle in testnet
     delayedOracle[WETH] = IDelayedOracle(0xEaC8c0f0fDba7e16f3d2704507a7BD8E79839cBf);
     delayedOracle[OP] = IDelayedOracle(0x9cD9256f91aC6fe823D9A9F415147AF0C6ADE3F4); // ignore for subgraph testing

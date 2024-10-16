@@ -42,9 +42,4 @@ contract StableSwapAero is StabilityMOM {
       if (allowedAssets[routes[i].from] == false || allowedAssets[routes[i].to] == false) revert AssetNotAllowed();
     }
   }
-
-  function _enforceEquity(uint256 equityBefore, uint256 equityAfter) internal pure returns (bool) {
-    if (equityBefore < equityAfter) revert InvalidSwap();
-    return true;
-  }
 }
