@@ -159,10 +159,10 @@ contract DeployTestnet is TestnetParams, Deploy {
 
     // Test tokens
     collateral[GTC_ETH] = new ClaimableERC20('Gitcoin Ethereum', 'GTCETH', 18, 1);
-    collateral[CHAR] = new ClaimableERC20('Biochar Credits', 'CHAR', 18, 5);
-    collateral[KLIMA] = new ClaimableERC20('Klima', 'KLIMA', 18, 300);
-    collateral[GLOUSD] = new ClaimableERC20('Glo Dollar', 'GLOUSD', 18, 150);
-    collateral[CELO] = new ClaimableERC20('Celo', 'CELO', 18, 50);
+    collateral[CHAR] = new ClaimableERC20('Biochar Credits', 'CHAR', 18, 16);
+    collateral[KLIMA] = new ClaimableERC20('Klima', 'KLIMA', 18, 1500);
+    collateral[GLOUSD] = new ClaimableERC20('Glo Dollar', 'GLOUSD', 18, 2300);
+    collateral[CELO] = new ClaimableERC20('Celo', 'CELO', 18, 3000);
 
     // Hardcoded feeds for new collateral tokens
     IBaseOracle _gtcEthUsdOracle = new HardcodedOracle('GTCETH / USD', 2600e18);
