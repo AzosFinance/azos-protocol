@@ -16,6 +16,18 @@ interface IStabilityMOM {
   /// @param isAllowed The new allowed status of the asset
   event AllowedAssetsUpdated(address indexed asset, bool isAllowed);
 
+  /// @notice Emitted when liquidity is received
+  /// @param sender The address that sent the liquidity
+  /// @param amount The amount of liquidity received
+  event LiquidityReceived(address indexed sender, uint256 amount);
+
+  /// @notice Emitted when the deposit cap is updated
+  /// @param depositCap The new deposit cap
+  event DepositCap(uint256 depositCap);
+
+  /// @notice Error thrown when the deposit cap is reached
+  error DepositCapReached();
+
   /// @notice Error thrown when trying to call a contract with no code
   error NoCode();
 
@@ -31,9 +43,20 @@ interface IStabilityMOM {
   /// @notice Error thrown when an asset is not allowed
   error AssetNotAllowed();
 
+  /// @notice Error thrown when the swap is invalid
   error InvalidSwap();
 
+  /// @notice Error thrown when the route is invalid
   error InvalidRoute();
+
+  /// @notice Error thrown when the amount is invalid
+  error InvalidAmount();
+
+  /// @notice Error thron when swap delta is invalid
+  error InvalidDelta();
+
+  /// @notice Error thrown when the deposit cap must be raised
+  error DepositCapMustBeRaised();
 
   /// @notice Delegates multiple actions to be executed
   /// @param actionIds An array of action IDs to be executed

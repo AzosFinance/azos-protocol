@@ -20,7 +20,7 @@ contract StableSwapAero is StabilityMOM {
   constructor(
     IRouter router_,
     address factory_
-  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0)) {
+  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0), uint256(0)) {
     router = router_;
     factory = factory_;
   }

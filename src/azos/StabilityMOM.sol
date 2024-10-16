@@ -15,13 +15,16 @@ import {IStabilityMOM} from '@azosinterfaces/IStabilityMOM.sol';
 
 contract StabilityMOM is MOM, IStabilityMOM {
   mapping(address allowedAsset => bool isAllowed) public allowedAssets;
+  uint256 internal _depositCap;
+  uint256 internal _deposited;
   uint256 internal _stablecoinDecimals;
 
   constructor(
     address logicContract,
     IMOMRegistry registry,
     IERC20Metadata asset,
-    address pauser
+    address pauser,
+    uint256 depositCap
   ) MOM(registry, asset, pauser) {
     _actions[_actionsCounter] = logicContract;
     allowedAssets[address(asset)] = true;
@@ -29,6 +32,8 @@ contract StabilityMOM is MOM, IStabilityMOM {
     emit ActionRegistered(logicContract, _actionsCounter);
     _stablecoinDecimals = 10e18 ** asset.decimals();
     _actionsCounter++;
+    _depositCap = depositCap;
+    emit DepositCap(depositCap);
   }
 
   // @inheritdoc IMOM
@@ -59,6 +64,24 @@ contract StabilityMOM is MOM, IStabilityMOM {
 
   function checkpointEquity() public view returns (uint256 equity) {
     return _checkpointEquity();
+  }
+
+  function receiveLiquidity(uint256 amount) external {
+    if (amount + _deposited > _depositCap) revert DepositCapReached();
+    _deposited += amount;
+    uint256 balanceBefore = _asset.balanceOf(address(this));
+    _asset.transferFrom(msg.sender, address(this), amount);
+    uint256 balanceAfter = _asset.balanceOf(address(this));
+    if (balanceAfter - balanceBefore != amount) revert InvalidAmount();
+    _mintCoins(_scaleStablecoin(amount));
+    _coin.transfer(msg.sender, amount);
+    emit LiquidityReceived(msg.sender, amount);
+  }
+
+  function raiseDepositCap(uint256 amount) external isAuthorized {
+    if (amount < _depositCap) revert DepositCapMustBeRaised();
+    _depositCap += amount;
+    emit DepositCap(amount);
   }
 
   function _checkpointEquity() internal view override returns (uint256 equity) {
