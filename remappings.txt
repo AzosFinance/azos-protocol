@@ -11,3 +11,4 @@ ds-test/=node_modules/ds-test/src/
 @libraries/=src/libraries/
 @script/=script/
 @test/=test/
+@mock/=test/mocks
