@@ -20,7 +20,7 @@ contract StableSwapAero is StabilityMOM {
   constructor(
     IRouter router_,
     address factory_
-  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0)) {
+  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0), uint256(0)) {
     router = router_;
     factory = factory_;
   }
@@ -41,10 +41,5 @@ contract StableSwapAero is StabilityMOM {
       if (routes[i].factory != factory) revert InvalidRoute();
       if (allowedAssets[routes[i].from] == false || allowedAssets[routes[i].to] == false) revert AssetNotAllowed();
     }
-  }
-
-  function _enforceEquity(uint256 equityBefore, uint256 equityAfter) internal pure returns (bool) {
-    if (equityBefore < equityAfter) revert InvalidSwap();
-    return true;
   }
 }
