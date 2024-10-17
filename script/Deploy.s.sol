@@ -61,6 +61,9 @@ abstract contract Deploy is Common, Script {
     // Deploy Merkle tree claim contract and mint protocol tokens to it
     // deployTokenDistributor();
 
+    // Deploy Azos Protocol MOMs
+    deployAzosProtocolMOMs(SWAP_ROUTER);
+
     if (delegate == address(0)) {
       _revokeDeployerToAll(governor);
     } else if (delegate == deployer) {
@@ -146,7 +149,7 @@ contract DeployTestnet is TestnetParams, Deploy {
   }
 
   function setupEnvironment() public virtual override updateParams {
-    delegate = 0xd9Bc04Fb848e0bF3EfCFc7e43039cb37F281E4B3; // EOA
+    delegate = 0xd9Bc04Fb848e0bF3EfCFc7e43039cb37F281E4B3; // Deployer EOA Public Key
 
     // Deploy oracle factories
     denominatedOracleFactory = new DenominatedOracleFactory();
@@ -191,7 +194,7 @@ contract DeployTestnet is TestnetParams, Deploy {
     systemCoinOracle = new DeviatedOracle({
       _symbol: 'ZAI / USD',
       _oracleRelayer: address(oracleRelayer),
-      _deviation: OP_SEPOLIA_ZAI_PRICE_DEVIATION
+      _deviation: BASE_SEPOLIA_ZAI_PRICE_DEVIATION
     });
 
     oracleRelayer.modifyParameters('systemCoinOracle', abi.encode(systemCoinOracle));

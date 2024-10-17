@@ -20,7 +20,8 @@ import {
   IPostSettlementSurplusAuctionHouse,
   IAzosGovernor,
   ITokenDistributor,
-  IModifiable
+  IModifiable,
+  ISwapRouter
 } from '@script/Contracts.s.sol';
 
 import {WAD, RAY, RAD} from '@libraries/Math.sol';
@@ -35,6 +36,9 @@ int24 constant ZAI_ETH_INITIAL_TICK = 76_013; // ~2000 ZAI = 1 ETH
 
 uint24 constant ZAI_POOL_FEE_TIER = 3000; // 0.3 %
 uint16 constant ZAI_POOL_OBSERVATION_CARDINALITY = 5000; // Safest cardinality would be 43.2k (at 2s per block, 1d TWAP)
+
+// #todo setup a swap router for mainnet
+ISwapRouter constant SWAP_ROUTER = ISwapRouter(0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4); // Base Sepolia Uniswap V3 Swap Router
 
 // Collateral Names
 bytes32 constant ETH_A = bytes32('ETH-A'); // 0x4554482d41000000000000000000000000000000000000000000000000000000

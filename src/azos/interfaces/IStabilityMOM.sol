@@ -5,6 +5,7 @@ pragma solidity ^0.8.20;
 /// @notice Interface for the Stability Module Operations Manager (MOM)
 /// @dev This interface defines the events, errors, and functions for the StabilityMOM contract
 interface IStabilityMOM {
+  
   /// @notice Emitted when an action is executed
   /// @param success Whether the action was successful
   /// @param result The result of the action
@@ -24,6 +25,18 @@ interface IStabilityMOM {
   /// @notice Emitted when the deposit cap is updated
   /// @param depositCap The new deposit cap
   event DepositCap(uint256 depositCap);
+
+  /// @notice Emitted after a swap
+  /// @param tokenIn The address of the token that was swapped in
+  /// @param tokenOut The address of the token that was swapped out
+  /// @param amountIn The amount of the token that was swapped in
+  /// @param amountOut The amount of the token that was swapped out
+  event Swap(address tokenIn, address tokenOut, uint256 amountIn, uint256 amountOut);
+
+  /// @notice Emitted after a keeper is paid for triggering actions
+  /// @param keeper The address of the keeper
+  /// @param amount The amount paid to the keeper
+  event KeeperPayment(address indexed keeper, uint256 amount);
 
   /// @notice Error thrown when the deposit cap is reached
   error DepositCapReached();

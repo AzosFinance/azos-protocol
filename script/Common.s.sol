@@ -56,6 +56,17 @@ abstract contract Common is Contracts, Params {
     coinJoin = new CoinJoin(address(safeEngine), address(systemCoin));
 
     collateralJoinFactory = new CollateralJoinFactory(address(safeEngine));
+
+  }
+
+  function deployAzosProtocolMOMs(ISwapRouter swapRouter) public updateParams {
+    // deploy Azos Protocol MOMs
+    momRegistry = new MOMRegistry(address(systemCoin), address(protocolToken), address(oracleRelayer), address(this));
+    momRegistry.addAuthorization(address(governor));
+    stableSwapUniV3 = new StableSwapUniV3(swapRouter); // Uniswap V3 Swap Router
+    stabilityMOM = new StabilityMOM(address(stableSwapUniV3), momRegistry, collateral[GLOUSD], address(this), 2_000_000 ether); // 2 million GLOUSD
+    momRegistry.registerMOM(address(stabilityMOM), 2_000_000 ether, 2_000_000 ether, true);
+    momRegistry.registerAction(uint256(1), address(stableSwapUniV3));
   }
 
   function deployTaxModule() public updateParams {

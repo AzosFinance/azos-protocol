@@ -130,6 +130,10 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     return true;
   }
 
+  function registerAction(uint256 momId, address action) external isAuthorized {
+    IMOM(modules[momCounterId]).registerAction(action);
+  }
+
   /// @notice Returns the normalized redemption price of the system coin
   function getRedemptionPrice() public returns (uint256) {
     return oracleRelayer.redemptionPrice() / RAY_TO_WAD;
@@ -184,10 +188,10 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
     return (successes, results);
   }
 
-  /// @notice Restricts function access to registered Market Operations Modules (MOMs) or self
-  /// @dev A MOM is considered registered if it has non-zero protocol or coin limits
+  /// @notice Restricts function access to registered Market Operations Modules (MOMs)
+  /// @dev Check the isMOM mapping.
   modifier onlyMOM() {
-    if (!isMOM[msg.sender] || !_isAuthorized(msg.sender)) revert NotMOM();
+    if (!isMOM[msg.sender]) revert NotMOM();
     _;
   }
 }
