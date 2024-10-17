@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 
 /*
-      /\                   
-     /  \    _______  ___  
-    / /\ \  |_  / _ \/ __| 
-   / ____ \  / / (_) \__ \ 
-  /_/    \_\/___\___/|___/ 
+      /\
+     /  \    _______  ___
+    / /\ \  |_  / _ \/ __|
+   / ____ \  / / (_) \__ \
+  /_/    \_\/___\___/|___/
 */
 
 pragma solidity ^0.8.20;
@@ -88,6 +88,10 @@ abstract contract MOM is Authorizable, IMOM, Pausable {
   // MOM implementations must override this function
   function _checkpointEquity() internal view virtual returns (uint256 equity) {
     return 0;
+  }
+  
+  function isActionRegistered(uint256 actionId) public view returns (bool) {
+    return _isActionRegistered[actionId];
   }
 
   function _getModuleData()
