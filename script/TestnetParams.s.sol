@@ -5,28 +5,28 @@ import '@script/Params.s.sol';
 
 abstract contract TestnetParams is Contracts, Params {
   // --- Testnet Params ---
-  uint256 constant OP_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
+  uint256 constant BASE_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
   // #todo setup an admin safe on Base and change this address
-  address constant OP_SEPOLIA_ADMIN_SAFE = 0xCAFd432b7EcAfff352D92fcB81c60380d437E99D;
+  address constant BASE_SEPOLIA_ADMIN_SAFE = 0x121Bd4d3DEAb4C5591D70e5898D16fa6cb5D8F95;
 
   function _getEnvironmentParams() internal override {
     // Setup delegated collateral joins
-    delegatee[OP] = address(azosDelegatee);
+    delegatee[KLIMA] = address(azosDelegatee); // Base Sepolia Uniswap V3 Swap Router
 
     _safeEngineParams = ISAFEEngine.SAFEEngineParams({
-      safeDebtCeiling: 1_000_000 * WAD, // WAD
-      globalDebtCeiling: 55_000_000 * RAD // initially disabled
+      safeDebtCeiling: 2_000_000 * WAD, // WAD
+      globalDebtCeiling: 250_000_000 * RAD // initially disabled
     });
 
     // change the minimum amount of surplus to transfer
     _accountingEngineParams = IAccountingEngine.AccountingEngineParams({
-      surplusIsTransferred: 0, // surplus is auctioned
+      surplusIsTransferred: 1, // surplus is auctioned
       surplusDelay: 1 days,
       popDebtDelay: 0,
       disableCooldown: 3 days,
       surplusAmount: 42_000 * RAD, // 42k ZAI
-      surplusBuffer: 100_000 * RAD, // 100k ZAI
-      debtAuctionMintedTokens: 10_000 * WAD, // 10k KITE
+      surplusBuffer: 1_000 * RAD, // 100k ZAI
+      debtAuctionMintedTokens: 10_000 * WAD, // 10k AZOS
       debtAuctionBidSize: 1000 * RAD // 1k ZAI
     });
 
@@ -75,7 +75,7 @@ abstract contract TestnetParams is Contracts, Params {
 
     _taxCollectorSecondaryTaxReceiver.push(
       ITaxCollector.TaxReceiver({
-        receiver: OP_SEPOLIA_ADMIN_SAFE,
+        receiver: BASE_SEPOLIA_ADMIN_SAFE,
         canTakeBackTax: true, // [bool]
         taxPercentage: 0.21e18 // 21%
       })
@@ -160,20 +160,20 @@ abstract contract TestnetParams is Contracts, Params {
     }
 
     // --- Collateral Specific Params ---
-    // #todo check the WETH params - I don't think we need these... these were special for pre-deployed tokens
-    _oracleRelayerCParams[WETH].safetyCRatio = 1.35e27; // 135%
-    _oracleRelayerCParams[WETH].liquidationCRatio = 1.35e27; // 135%
-    _taxCollectorCParams[WETH].stabilityFee = RAY + 1.54713e18; // + 5%/yr
-    _safeEngineCParams[WETH].debtCeiling = 100_000_000 * RAD; // 100M ZAI
+    // #todo check the GTC_ETH params - I don't think we need these... these were special for pre-deployed tokens
+    _oracleRelayerCParams[GTC_ETH].safetyCRatio = 1.35e27; // 135%
+    _oracleRelayerCParams[GTC_ETH].liquidationCRatio = 1.35e27; // 135%
+    _taxCollectorCParams[GTC_ETH].stabilityFee = RAY + 1.54713e18; // + 5%/yr
+    _safeEngineCParams[GTC_ETH].debtCeiling = 100_000_000 * RAD; // 100M ZAI
 
-    _liquidationEngineCParams[OP].liquidationPenalty = 1.2e18; // 20%
-    _collateralAuctionHouseParams[OP].maxDiscount = 0.5e18; // -50%
+    _liquidationEngineCParams[KLIMA].liquidationPenalty = 1.2e18; // 20%
+    _collateralAuctionHouseParams[KLIMA].maxDiscount = 0.5e18; // -50%
 
     // --- Governance Params ---
     _governorParams = IAzosGovernor.AzosGovernorParams({
       votingDelay: 12 hours, // 43_200
       votingPeriod: 36 hours, // 129_600
-      proposalThreshold: 5000 * WAD, // 5k KITE
+      proposalThreshold: 5000 * WAD, // 5k AZOS
       quorumNumeratorValue: 1, // 1%
       quorumVoteExtension: 1 days, // 86_400
       timelockMinDelay: 1 days // 86_400

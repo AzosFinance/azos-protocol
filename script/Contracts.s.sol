@@ -66,6 +66,7 @@ import {IUniswapV3Factory} from '@uniswap/v3-core/contracts/interfaces/IUniswapV
 import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Pool.sol';
 import {IModifiable} from '@interfaces/utils/IModifiable.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
+import {ISwapRouter} from '@azos/interfaces/Uniswap/ISwapRouter.sol';
 
 // --- Proxy Contracts ---
 import {BasicActions, CommonActions} from '@contracts/proxies/actions/BasicActions.sol';
@@ -85,6 +86,10 @@ import {AzosGovernor, IAzosGovernor} from '@contracts/governance/AzosGovernor.so
 import {TokenDistributor, ITokenDistributor} from '@contracts/tokens/TokenDistributor.sol';
 import {AzosDelegatee} from '@contracts/governance/AzosDelegatee.sol';
 
+// --- Azos Protocol MOMs ---
+import {MOMRegistry} from '@azos/MOMRegistry.sol';
+import {StabilityMOM} from '@azos/StabilityMOM.sol';
+import {StableSwapUniV3} from '@azos/stabilityActions/StableSwapUniV3.sol';
 /**
  * @title  Contracts
  * @notice This contract initializes all the contracts, so that they're inherited and available throughout scripts scopes.
@@ -160,4 +165,9 @@ abstract contract Contracts {
   AzosGovernor public azosGovernor;
   TokenDistributor public tokenDistributor;
   AzosDelegatee public azosDelegatee;
+
+  // --- Azos Protocol MOMs ---
+  MOMRegistry public momRegistry;
+  StabilityMOM public stabilityMOM;
+  StableSwapUniV3 public stableSwapUniV3;
 }

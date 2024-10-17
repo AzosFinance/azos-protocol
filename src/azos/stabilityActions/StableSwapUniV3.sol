@@ -83,6 +83,7 @@ contract StableSwapUniV3 is StabilityMOM {
     token1InputPriceLimit = token1PriceLimit;
   }
 
+  // #todo we need to reward the keepers for caling this function
   function action(bytes calldata data) external returns (bool) {
     ISwapRouter.ExactInputSingleParams memory params;
     uint160 sqrtPriceLimitX96;
@@ -113,6 +114,8 @@ contract StableSwapUniV3 is StabilityMOM {
 
     uint256 equityAfter = checkpointEquity();
     _enforceEquity(equityBefore, equityAfter);
+    _payKeeper(equityBefore, equityAfter);
+    emit Swap(tokenIn, tokenOut, amountIn, amountOut);
     return true;
   }
 
@@ -136,6 +139,15 @@ contract StableSwapUniV3 is StabilityMOM {
 
   function _enforceRoute(address tokenIn, address tokenOut) internal view {
     if (allowedAssets[tokenIn] == false || allowedAssets[tokenOut] == false) revert AssetNotAllowed();
+  }
+
+  function _payKeeper(uint256 equityBefore, uint256 equityAfter) internal {
+    uint256 equityChange = equityAfter - equityBefore;
+    uint256 keeperFee = equityChange / 10;
+    if (equityChange > 0) {
+      _coin.transfer(msg.sender, keeperFee);
+      emit KeeperPayment(msg.sender, keeperFee);
+    }
   }
 
   struct SwapCallbackData {
