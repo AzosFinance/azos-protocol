@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: UNLICENSED
 
 /*
-      /\                   
-     /  \    _______  ___  
-    / /\ \  |_  / _ \/ __| 
-   / ____ \  / / (_) \__ \ 
-  /_/    \_\/___\___/|___/ 
+      /\
+     /  \    _______  ___
+    / /\ \  |_  / _ \/ __|
+   / ____ \  / / (_) \__ \
+  /_/    \_\/___\___/|___/
 */
 
 // #todo consider how we would extend stability mom for Cowswap and signature based DEXs
@@ -29,6 +29,7 @@ contract StabilityMOM is MOM, IStabilityMOM {
     uint256 depositCap
   ) MOM(registry, asset, pauser) {
     _actions[_actionsCounter] = logicContract;
+    _isActionRegistered[_actionsCounter] = true;
     allowedAssets[address(asset)] = true;
     allowedAssets[address(_coin)] = true;
     emit ActionRegistered(logicContract, _actionsCounter);
@@ -92,7 +93,15 @@ contract StabilityMOM is MOM, IStabilityMOM {
     _depositCap += amount;
     emit DepositCap(amount);
   }
-
+  
+  function getDepositCap() public view returns (uint256) {
+    return _depositCap;
+  }
+  
+  function getDeposited() public view returns (uint256) {
+    return _deposited;
+  }
+  
   function _checkpointEquity() internal view override returns (uint256 equity) {
     uint256 coinDebt = _getCoinDebt();
     uint256 coinBalance = _getCoinBalance();

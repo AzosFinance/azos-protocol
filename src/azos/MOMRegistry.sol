@@ -2,11 +2,11 @@
 pragma solidity ^0.8.20;
 
 /*
-      /\                   
-     /  \    _______  ___  
-    / /\ \  |_  / _ \/ __| 
-   / ____ \  / / (_) \__ \ 
-  /_/    \_\/___\___/|___/ 
+      /\
+     /  \    _______  ___
+    / /\ \  |_  / _ \/ __|
+   / ____ \  / / (_) \__ \
+  /_/    \_\/___\___/|___/
 */
 
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
@@ -187,7 +187,7 @@ contract MOMRegistry is Authorizable, IMOMRegistry {
   /// @notice Restricts function access to registered Market Operations Modules (MOMs) or self
   /// @dev A MOM is considered registered if it has non-zero protocol or coin limits
   modifier onlyMOM() {
-    if (!isMOM[msg.sender] || !_isAuthorized(msg.sender)) revert NotMOM();
+    if (!isMOM[msg.sender]) revert NotMOM();
     _;
   }
 }
