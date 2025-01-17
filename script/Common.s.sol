@@ -64,7 +64,7 @@ abstract contract Common is Contracts, Params {
     momRegistry = new MOMRegistry(address(systemCoin), address(protocolToken), address(oracleRelayer), address(this));
     momRegistry.addAuthorization(address(governor));
     stableSwapUniV3 = new StableSwapUniV3(swapRouter); // Uniswap V3 Swap Router
-    stabilityMOM = new StabilityMOM(address(stableSwapUniV3), momRegistry, collateral[GLOUSD], address(this), 2_000_000 ether); // 2 million GLOUSD
+    stabilityMOM = new StabilityMOM(address(stableSwapUniV3), momRegistry, collateral[USDGLO], address(this), 2_000_000 ether); // 2 million USDGLO
     momRegistry.registerMOM(address(stabilityMOM), 2_000_000 ether, 2_000_000 ether, true);
     momRegistry.registerAction(uint256(1), address(stableSwapUniV3));
   }

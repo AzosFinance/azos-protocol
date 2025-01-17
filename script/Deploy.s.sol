@@ -9,7 +9,8 @@ import {Script} from 'forge-std/Script.sol';
 import {Common} from '@script/Common.s.sol';
 import {TestnetParams} from '@script/TestnetParams.s.sol';
 import {MainnetParams} from '@script/MainnetParams.s.sol';
-import {ClaimableERC20} from "../src/contracts/for-test/ClaimableERC20.sol";
+import {ClaimableERC20} from '../src/contracts/for-test/ClaimableERC20.sol';
+import {console}     from "forge-std/console.sol";
 
 abstract contract Deploy is Common, Script {
   function setupEnvironment() public virtual {}
@@ -155,38 +156,124 @@ contract DeployTestnet is TestnetParams, Deploy {
     denominatedOracleFactory = new DenominatedOracleFactory();
     delayedOracleFactory = new DelayedOracleFactory();
 
-    // Setup oracle feeds
+    // First deploy our ClaimableERC20 tokens
+    ClaimableERC20 gtcEthToken = new ClaimableERC20(
+        'Gitcoin Ethereum',
+        'GTC-ETH',
+        18,
+        1, // claim amount
+        24 hours // claim period
+    );
 
-    // ZAI
-    systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
+    ClaimableERC20 klimaToken = new ClaimableERC20(
+        'Klima DAO',
+        'KLIMA',
+        18,
+        1500, // claim amount
+        24 hours // claim period
+    );
 
-    // Test tokens
-    collateral[GTC_ETH] = new ClaimableERC20('Gitcoin Ethereum', 'GTCETH', 18, 1);
-    collateral[CHAR] = new ClaimableERC20('Biochar Credits', 'CHAR', 18, 16);
-    collateral[KLIMA] = new ClaimableERC20('Klima', 'KLIMA', 18, 1500);
-    collateral[GLOUSD] = new ClaimableERC20('Glo Dollar', 'GLOUSD', 18, 2300);
-    collateral[CELO] = new ClaimableERC20('Celo', 'CELO', 18, 3000);
+    ClaimableERC20 celoToken = new ClaimableERC20(
+        'Celo',
+        'CELO',
+        18,
+        3000, // claim amount
+        24 hours // claim period
+    );
 
-    // Hardcoded feeds for new collateral tokens
-    IBaseOracle _gtcEthUsdOracle = new HardcodedOracle('GTCETH / USD', 2600e18);
-    IBaseOracle _charUsdOracle = new HardcodedOracle('CHAR / USD', 168.71e18);
-    IBaseOracle _klimaUsdOracle = new HardcodedOracle('KLIMA / USD', 1.67e18);
-    IBaseOracle _gloUsdOracle = new HardcodedOracle('GLOUSD / USD', 1e18);
-    IBaseOracle _celoUsdOracle = new HardcodedOracle('CELO / USD', 0.78e18);
+    ClaimableERC20 usdgloToken = new ClaimableERC20(
+        'Glo Dollar',
+        'USDGLO',
+        18,
+        1000, // claim amount
+        24 hours // claim period
+    );
 
-    // Deploy delayed oracles for new collateral tokens
+    ClaimableERC20 charToken = new ClaimableERC20(
+        'Biochar Credits',
+        'CHAR',
+        18,
+        7, // claim amount
+        24 hours // claim period
+    );
+
+    // Update collateral mappings with our newly deployed tokens
+    collateral[GTC_ETH] = IERC20Metadata(address(gtcEthToken));
+    collateral[KLIMA] = IERC20Metadata(address(klimaToken));
+    collateral[CELO] = IERC20Metadata(address(celoToken));
+    collateral[USDGLO] = IERC20Metadata(address(usdgloToken));
+    collateral[CHAR] = IERC20Metadata(address(charToken));
+
+    // Deploy MultiClaimer for easy claiming of all tokens
+    address[] memory tokenAddresses = new address[](5);
+    tokenAddresses[0] = address(gtcEthToken);
+    tokenAddresses[1] = address(klimaToken);
+    tokenAddresses[2] = address(celoToken);
+    tokenAddresses[3] = address(usdgloToken);
+    tokenAddresses[4] = address(charToken);
+    
+    MultiClaimer multiClaimer = new MultiClaimer(tokenAddresses);
+
+    // Setup oracle system with DIA Oracle V2
+    address diaOracleV2 = 0x83b56e80e47698bbc0d97828c1d8b1d509ab6b4b;
+    
+    // Create base price feeds
+    IBaseOracle _ethUsdOracle = new DIARelayerV2(
+        diaOracleV2,
+        'ETH/USD',
+        1 hours
+    );
+
+    IBaseOracle _daiUsdOracle = new DIARelayerV2(
+        diaOracleV2,
+        'DAI/USD',
+        1 hours
+    );
+
+    IBaseOracle _klimaUsdOracle = new DIARelayerV2(
+        diaOracleV2,
+        'KLIMA/USD',
+        1 hours
+    );
+
+    IBaseOracle _celoUsdOracle = new DIARelayerV2(
+        diaOracleV2,
+        'CELO/USD',
+        1 hours
+    );
+
+    // For GTC-ETH, we'll use a DenominatedOracle that combines ETH/USD and DAI/USD
+    IBaseOracle _gtcEthUsdOracle = denominatedOracleFactory.deployDenominatedOracle(
+        _daiUsdOracle, // GTC price in DAI
+        _ethUsdOracle, // denominated in ETH
+        true // inverted to get GTC/ETH price
+    );
+
+    // For USDGLO, we'll use the DAI price as a reference
+    IBaseOracle _usdgloUsdOracle = _daiUsdOracle; // Using DAI price for USDGLO
+
+    // Deploy delayed oracles for each token
     delayedOracle[GTC_ETH] = delayedOracleFactory.deployDelayedOracle(_gtcEthUsdOracle, 1 hours);
-    delayedOracle[CHAR] = delayedOracleFactory.deployDelayedOracle(_charUsdOracle, 1 hours);
     delayedOracle[KLIMA] = delayedOracleFactory.deployDelayedOracle(_klimaUsdOracle, 1 hours);
-    delayedOracle[GLOUSD] = delayedOracleFactory.deployDelayedOracle(_gloUsdOracle, 1 hours);
     delayedOracle[CELO] = delayedOracleFactory.deployDelayedOracle(_celoUsdOracle, 1 hours);
+    delayedOracle[USDGLO] = delayedOracleFactory.deployDelayedOracle(_usdgloUsdOracle, 1 hours);
+    delayedOracle[CHAR] = delayedOracleFactory.deployDelayedOracle(_celoUsdOracle, 1 hours); // Using CELO price for CHAR temporarily
 
-    // Setup collateral types
+  // Setup collateral types
     collateralTypes.push(GTC_ETH);
     collateralTypes.push(CHAR);
     collateralTypes.push(KLIMA);
-    collateralTypes.push(GLOUSD);
+    collateralTypes.push(USDGLO);
     collateralTypes.push(CELO);
+    
+    // Log deployed addresses for verification
+    console.log('Deployed Tokens:');
+    console.log('GTC-ETH:', address(gtcEthToken));
+    console.log('KLIMA:', address(klimaToken));
+    console.log('CELO:', address(celoToken));
+    console.log('USDGLO:', address(usdgloToken));
+    console.log('CHAR:', address(charToken));
+    console.log('MultiClaimer:', address(multiClaimer));
   }
 
   function setupPostEnvironment() public virtual override updateParams {

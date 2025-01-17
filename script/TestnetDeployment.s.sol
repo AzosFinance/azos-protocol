@@ -2,8 +2,9 @@
 pragma solidity 0.8.20;
 
 import '@script/Contracts.s.sol';
-import {TestnetParams, GTC_ETH, KLIMA, CELO, GLOUSD, CHAR} from '@script/TestnetParams.s.sol';
+import {TestnetParams, GTC_ETH, KLIMA, CELO, USDGLO, CHAR} from '@script/TestnetParams.s.sol';
 import {OP_WETH, OP_OPTIMISM} from '@script/Registry.s.sol';
+import {DIARelayerV2} from '@contracts/oracles/DIARelayerV2.sol';
 
 abstract contract TestnetDeployment is Contracts, TestnetParams {
   // NOTE: The last significant change in the Testnet deployment, to be used in the test scenarios
@@ -19,7 +20,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralTypes.push(GTC_ETH);
     collateralTypes.push(KLIMA);
     collateralTypes.push(CELO);
-    collateralTypes.push(GLOUSD);
+    collateralTypes.push(USDGLO);
     collateralTypes.push(CHAR);
 
     // --- ERC20s ---
@@ -27,7 +28,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateral[GTC_ETH] = IERC20Metadata(address(2));
     collateral[KLIMA] = IERC20Metadata(address(1));
     collateral[CELO] = IERC20Metadata(0xE6ff79DfcE1AC82AB0f420feabef7fA0B6113913);
-    collateral[GLOUSD] = IERC20Metadata(0x0976e648859425757142856303760c76d5fA3742);
+    collateral[USDGLO] = IERC20Metadata(0x0976e648859425757142856303760c76d5fA3742);
     collateral[CHAR] = IERC20Metadata(0x32d1e9Edb0f5332c6A7B7aa2C50134270DB618E6);
 
     systemCoin = SystemCoin(0xbcfEeAfb457854b69b428E3aD773Cfa632B34CBB);
@@ -69,8 +70,8 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralJoin[CELO] = CollateralJoin(0x8b53AD3842FBe724971c5E9500149Ae2E45B42E0);
     collateralAuctionHouse[CELO] = CollateralAuctionHouse(0x8f789370D9cd98206D204Bf2bB90Af5219A08e39);
 
-    collateralJoin[GLOUSD] = CollateralJoin(0x75f6DCAD5f005F9ff2073e7C6E18E97a4A6861A5);
-    collateralAuctionHouse[GLOUSD] = CollateralAuctionHouse(0xcAE8A1218cc01EFE2F3fD2D87EA44d559EaEed1B);
+    collateralJoin[USDGLO] = CollateralJoin(0x75f6DCAD5f005F9ff2073e7C6E18E97a4A6861A5);
+    collateralAuctionHouse[USDGLO] = CollateralAuctionHouse(0xcAE8A1218cc01EFE2F3fD2D87EA44d559EaEed1B);
 
     collateralJoin[CHAR] = CollateralJoin(0xD96e4142C4e3Af50cEF3143C36B33b663139835b);
     collateralAuctionHouse[CHAR] = CollateralAuctionHouse(0xa2DF3dB7b0A8a7C6f0128253437F5948AFFbCe14);
@@ -98,7 +99,7 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     delayedOracle[GTC_ETH] = IDelayedOracle(0xEaC8c0f0fDba7e16f3d2704507a7BD8E79839cBf);
     delayedOracle[KLIMA] = IDelayedOracle(0x9cD9256f91aC6fe823D9A9F415147AF0C6ADE3F4); // ignore for subgraph testing
     delayedOracle[CELO] = IDelayedOracle(0x3bb0321AAc4d40cea8f6b1939CA696a06940Fd6C);
-    delayedOracle[GLOUSD] = IDelayedOracle(0x4f10A8E08460336933F804123D10a5D7D61AeAC9);
+    delayedOracle[USDGLO] = IDelayedOracle(0x4f10A8E08460336933F804123D10a5D7D61AeAC9);
     delayedOracle[CHAR] = IDelayedOracle(0x34a6405d42BFc95799CA8CC7b9037Ea618457998);
 
     // --- governance ---

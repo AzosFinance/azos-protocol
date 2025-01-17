@@ -120,7 +120,7 @@ abstract contract TestnetParams is Contracts, Params {
     for (uint256 _i; _i < collateralTypes.length; _i++) {
       bytes32 _cType = collateralTypes[_i];
 
-      if (_cType != GLOUSD) {
+      if (_cType != USDGLO) {
       _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
         oracle: delayedOracle[_cType],
         safetyCRatio: 1.5e27, // 150%

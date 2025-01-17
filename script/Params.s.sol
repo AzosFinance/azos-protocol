@@ -52,7 +52,7 @@ bytes32 constant TOTEM = bytes32('TOTEM'); // 0x544f54454d0000000000000000000000
 bytes32 constant GTC_ETH = bytes32('GTCETH');
 bytes32 constant KLIMA = bytes32('KLIMA');
 bytes32 constant CELO = bytes32('CELO');
-bytes32 constant GLOUSD = bytes32('GLOUSD');
+bytes32 constant USDGLO = bytes32('USDGLO');
 bytes32 constant CHAR = bytes32('CHAR');
 
 // Original Wrong Value
