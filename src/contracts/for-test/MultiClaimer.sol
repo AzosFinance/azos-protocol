@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0
-pragma solidity 0.8.20;
+pragma solidity ^0.8.20;
 
 import {ClaimableERC20} from "./ClaimableERC20.sol";
 
@@ -36,7 +36,7 @@ contract MultiClaimer {
         for (uint256 i = 0; i < tokenCount; i++) {
             ClaimableERC20 token = claimableTokens[i];
             if (token.canClaim(msg.sender)) {
-                token.claim();
+                token.claimFor(msg.sender);
                 claimed[claimedCount] = address(token);
                 claimedCount++;
             }

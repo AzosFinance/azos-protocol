@@ -11,6 +11,8 @@ import {TestnetParams} from '@script/TestnetParams.s.sol';
 import {MainnetParams} from '@script/MainnetParams.s.sol';
 import {ClaimableERC20} from '../src/contracts/for-test/ClaimableERC20.sol';
 import {console}     from "forge-std/console.sol";
+import {MultiClaimer} from '../src/contracts/for-test/MultiClaimer.sol';
+import {DIARelayerV2} from '../src/contracts/oracles/DIARelayerV2.sol';
 
 abstract contract Deploy is Common, Script {
   function setupEnvironment() public virtual {}
@@ -161,7 +163,7 @@ contract DeployTestnet is TestnetParams, Deploy {
         'Gitcoin Ethereum',
         'GTC-ETH',
         18,
-        1, // claim amount
+        0.5 ether, // claim amount
         24 hours // claim period
     );
 
@@ -169,7 +171,7 @@ contract DeployTestnet is TestnetParams, Deploy {
         'Klima DAO',
         'KLIMA',
         18,
-        1500, // claim amount
+        1555 ether, // claim amount
         24 hours // claim period
     );
 
@@ -177,7 +179,7 @@ contract DeployTestnet is TestnetParams, Deploy {
         'Celo',
         'CELO',
         18,
-        3000, // claim amount
+        1616 ether, // claim amount
         24 hours // claim period
     );
 
@@ -185,7 +187,7 @@ contract DeployTestnet is TestnetParams, Deploy {
         'Glo Dollar',
         'USDGLO',
         18,
-        1000, // claim amount
+        1000 ether, // claim amount
         24 hours // claim period
     );
 
@@ -193,7 +195,7 @@ contract DeployTestnet is TestnetParams, Deploy {
         'Biochar Credits',
         'CHAR',
         18,
-        7, // claim amount
+        7 ether, // claim amount
         24 hours // claim period
     );
 
@@ -203,6 +205,13 @@ contract DeployTestnet is TestnetParams, Deploy {
     collateral[CELO] = IERC20Metadata(address(celoToken));
     collateral[USDGLO] = IERC20Metadata(address(usdgloToken));
     collateral[CHAR] = IERC20Metadata(address(charToken));
+
+        // Clear any delegatee mappings since these tokens don't support delegation
+    delegatee[GTC_ETH] = address(0);
+    delegatee[KLIMA] = address(0);
+    delegatee[CELO] = address(0);
+    delegatee[USDGLO] = address(0);
+    delegatee[CHAR] = address(0);
 
     // Deploy MultiClaimer for easy claiming of all tokens
     address[] memory tokenAddresses = new address[](5);
@@ -214,8 +223,8 @@ contract DeployTestnet is TestnetParams, Deploy {
     
     MultiClaimer multiClaimer = new MultiClaimer(tokenAddresses);
 
-    // Setup oracle system with DIA Oracle V2
-    address diaOracleV2 = 0x83b56e80e47698bbc0d97828c1d8b1d509ab6b4b;
+      // Setup oracle system with DIA Oracle V2
+    address diaOracleV2 = 0x83b56E80e47698BBc0d97828C1d8b1D509Ab6B4b;
     
     // Create base price feeds
     IBaseOracle _ethUsdOracle = new DIARelayerV2(
@@ -242,18 +251,12 @@ contract DeployTestnet is TestnetParams, Deploy {
         1 hours
     );
 
-    // For GTC-ETH, we'll use a DenominatedOracle that combines ETH/USD and DAI/USD
-    IBaseOracle _gtcEthUsdOracle = denominatedOracleFactory.deployDenominatedOracle(
-        _daiUsdOracle, // GTC price in DAI
-        _ethUsdOracle, // denominated in ETH
-        true // inverted to get GTC/ETH price
-    );
 
     // For USDGLO, we'll use the DAI price as a reference
     IBaseOracle _usdgloUsdOracle = _daiUsdOracle; // Using DAI price for USDGLO
 
     // Deploy delayed oracles for each token
-    delayedOracle[GTC_ETH] = delayedOracleFactory.deployDelayedOracle(_gtcEthUsdOracle, 1 hours);
+    delayedOracle[GTC_ETH] = delayedOracleFactory.deployDelayedOracle(_ethUsdOracle, 1 hours);
     delayedOracle[KLIMA] = delayedOracleFactory.deployDelayedOracle(_klimaUsdOracle, 1 hours);
     delayedOracle[CELO] = delayedOracleFactory.deployDelayedOracle(_celoUsdOracle, 1 hours);
     delayedOracle[USDGLO] = delayedOracleFactory.deployDelayedOracle(_usdgloUsdOracle, 1 hours);
@@ -265,15 +268,10 @@ contract DeployTestnet is TestnetParams, Deploy {
     collateralTypes.push(KLIMA);
     collateralTypes.push(USDGLO);
     collateralTypes.push(CELO);
+
+    systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
+
     
-    // Log deployed addresses for verification
-    console.log('Deployed Tokens:');
-    console.log('GTC-ETH:', address(gtcEthToken));
-    console.log('KLIMA:', address(klimaToken));
-    console.log('CELO:', address(celoToken));
-    console.log('USDGLO:', address(usdgloToken));
-    console.log('CHAR:', address(charToken));
-    console.log('MultiClaimer:', address(multiClaimer));
   }
 
   function setupPostEnvironment() public virtual override updateParams {

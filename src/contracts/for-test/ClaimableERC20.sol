@@ -24,9 +24,17 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
   
   /// @notice Mapping to track the last claim timestamp for each user
   mapping(address => uint256) public lastClaimTimestamp;
+  
+  /// @notice The MultiClaimer contract address
+  address public multiClaimer;
+  
+  /// @notice Mapping of user addresses to their chosen delegates
+  mapping(address => address) public delegates;
 
   event ClaimPeriodUpdated(uint256 newPeriod);
   event ClaimAmountUpdated(uint256 newAmount);
+  event MultiClaimerUpdated(address newMultiClaimer);
+  event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
   
   /**
    * @param  _name The name of the ERC20 token
@@ -43,7 +51,7 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
     uint256 _claimPeriod
   ) ERC20(_name, _symbol) Ownable(msg.sender) {
     _decimals = __decimals;
-    claimAmount = _amount * 10**_decimals;
+    claimAmount = _amount;
     claimPeriod = _claimPeriod;
     
     // Mint 2 million tokens to the contract creator
@@ -65,7 +73,7 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
    * @param _newAmount New claim amount (before decimals)
    */
   function setClaimAmount(uint256 _newAmount) external onlyOwner {
-    uint256 adjustedAmount = _newAmount * 10**_decimals;
+    uint256 adjustedAmount = _newAmount;
     require(adjustedAmount > 0, 'Claim amount must be greater than 0');
     claimAmount = adjustedAmount;
     emit ClaimAmountUpdated(adjustedAmount);
@@ -107,5 +115,48 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
       return 0;
     }
     return nextClaimTime - block.timestamp;
+  }
+
+  function claimFor(address _recipient) external onlyMultiClaimer {
+    require(canClaim(_recipient), 'Claim period has not elapsed');
+    lastClaimTimestamp[_recipient] = block.timestamp;
+    _mint(_recipient, claimAmount);
+  }
+
+  /**
+   * @notice Set the MultiClaimer contract address
+   * @param _multiClaimer New MultiClaimer address
+   */
+  function setMultiClaimer(address _multiClaimer) external onlyOwner {
+    require(_multiClaimer != address(0), 'Invalid MultiClaimer address');
+    multiClaimer = _multiClaimer;
+    emit MultiClaimerUpdated(_multiClaimer);
+  }
+
+  /**
+   * @notice Modifier to restrict access to only the MultiClaimer contract
+   */
+  modifier onlyMultiClaimer() {
+    require(msg.sender == multiClaimer, 'Only MultiClaimer can call');
+    _;
+  }
+
+  /**
+   * @notice Delegate voting power to another address
+   * @param delegatee The address to delegate voting power to
+   */
+  function delegate(address delegatee) external {
+    address oldDelegate = delegates[msg.sender];
+    delegates[msg.sender] = delegatee;
+    emit DelegateChanged(msg.sender, oldDelegate, delegatee);
+  }
+
+  /**
+   * @notice Get the current delegate for an account
+   * @param account The address to get the delegate for
+   * @return The address of the current delegate
+   */
+  function getCurrentDelegate(address account) external view returns (address) {
+    return delegates[account];
   }
 }

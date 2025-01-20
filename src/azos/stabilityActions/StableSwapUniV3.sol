@@ -32,9 +32,19 @@ contract StableSwapUniV3 is StabilityMOM {
   // Our price target when inputting token1
   uint160 internal immutable token1InputPriceLimit;
 
-  constructor(ISwapRouter router_)
-    StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0), uint256(0))
-  {
+  constructor(
+    ISwapRouter router_,
+    IMOMRegistry registry_,
+    IERC20Metadata asset_,
+    address pauser_,
+    uint256 depositCap_
+  ) StabilityMOM(
+    address(this),  // logic contract is this contract itself
+    registry_,      // MOM registry
+    asset_,         // asset token
+    pauser_,        // pauser address
+    depositCap_     // deposit cap
+  ) {
     router = router_;
 
     address token0Before = address(_asset);

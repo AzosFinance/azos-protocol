@@ -120,20 +120,20 @@ abstract contract TestnetParams is Contracts, Params {
     for (uint256 _i; _i < collateralTypes.length; _i++) {
       bytes32 _cType = collateralTypes[_i];
 
-      if (_cType != USDGLO) {
+      // if (_cType != USDGLO) {
       _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
         oracle: delayedOracle[_cType],
         safetyCRatio: 1.5e27, // 150%
         liquidationCRatio: 1.5e27 // 150%
       });
-      }
-      else {
-        _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
-          oracle: delayedOracle[_cType],
-          safetyCRatio: 1.11e26, // 111%
-          liquidationCRatio: 1.11e26 // 111%
-        });
-      }
+      // }
+      // else {
+      //   _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
+      //     oracle: delayedOracle[_cType],
+      //     safetyCRatio: 1.11e26, // 111%
+      //     liquidationCRatio: 1.11e26 // 111%
+      //   });
+      // }
 
       _taxCollectorCParams[_cType] = ITaxCollector.TaxCollectorCollateralParams({
         // NOTE: 42%/yr => 1.42^(1/yr) = 1 + 11,11926e-9

@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 import '@script/Contracts.s.sol';
 import '@script/Params.s.sol';
 import '@script/Registry.s.sol';
+import 'forge-std/console.sol';
 
 // #todo Add the MOMRegistry, StabilityMOM and StableSwapAction deployment, authorizations and registrations
 import {TickMath} from '@uniswap/v3-core/contracts/libraries/TickMath.sol';
@@ -61,12 +62,30 @@ abstract contract Common is Contracts, Params {
 
   function deployAzosProtocolMOMs(ISwapRouter swapRouter) public updateParams {
     // deploy Azos Protocol MOMs
-    momRegistry = new MOMRegistry(address(systemCoin), address(protocolToken), address(oracleRelayer), address(this));
-    momRegistry.addAuthorization(address(governor));
-    stableSwapUniV3 = new StableSwapUniV3(swapRouter); // Uniswap V3 Swap Router
-    stabilityMOM = new StabilityMOM(address(stableSwapUniV3), momRegistry, collateral[USDGLO], address(this), 2_000_000 ether); // 2 million USDGLO
+    console.log('deployer', deployer);
+    console.log('governor', governor);
+    console.log('oracleRelayer', address(oracleRelayer));
+    console.log('systemCoin', address(systemCoin));
+    console.log('protocolToken', address(protocolToken));
+
+    momRegistry = new MOMRegistry(
+        address(systemCoin), 
+        address(protocolToken), 
+        address(oracleRelayer), 
+        deployer
+    );
+    
+    stableSwapUniV3 = new StableSwapUniV3(
+        swapRouter,           // router
+        momRegistry,          // registry
+        collateral[USDGLO],   // asset token (USDGLO)
+        deployer,             // pauser
+        2_000_000 ether      // deposit cap
+    );
+    console.log('stableSwapUniV3', address(stableSwapUniV3));
+    stabilityMOM = new StabilityMOM(address(stableSwapUniV3), momRegistry, collateral[USDGLO], deployer, 2_000_000 ether); // 2 million USDGLO
+    console.log('stabilityMOM', address(stabilityMOM));
     momRegistry.registerMOM(address(stabilityMOM), 2_000_000 ether, 2_000_000 ether, true);
-    momRegistry.registerAction(uint256(1), address(stableSwapUniV3));
   }
 
   function deployTaxModule() public updateParams {

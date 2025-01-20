@@ -14,7 +14,7 @@ contract DIARelayerV2 is IBaseOracle {
     IDIAOracleV2 public immutable diaOracle;
     
     /// @notice The key for the DIA price feed
-    string public immutable key;
+    string public key;
     
     /// @notice The threshold in seconds after which the price is considered stale
     uint256 public immutable staleThreshold;
@@ -42,18 +42,28 @@ contract DIARelayerV2 is IBaseOracle {
 
     /// @inheritdoc IBaseOracle
     function getResultWithValidity() external view returns (uint256 _price, bool _validity) {
-        (uint128 value, uint128 timestamp) = diaOracle.getValue(key);
+        uint128 value;
+        uint128 timestamp;
+        (value, timestamp) = diaOracle.getValue(key);
+        
+        // Check if the price is valid (non-zero)
+        require(value > 0, "Invalid price");
         
         // Convert the price to 18 decimals (DIA uses 8 decimals)
         _price = uint256(value) * 10**10;
         
         // Check if the price is stale
         _validity = block.timestamp <= uint256(timestamp) + staleThreshold;
+
+        return (_price, _validity);
     }
 
     /// @inheritdoc IBaseOracle
     function read() external view returns (uint256 _price) {
-        (_price,) = this.getResultWithValidity();
+        bool _validity;
+        (_price, _validity) = this.getResultWithValidity();
+        require(_validity, 'Price is stale');
+        return _price;
     }
 
     /// @inheritdoc IBaseOracle

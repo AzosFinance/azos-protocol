@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.20;
 
-import "forge-std/Test.sol";
-import "../../src/contracts/for-test/ClaimableERC20.sol";
+import 'forge-std/Test.sol';
+import '../../src/contracts/for-test/ClaimableERC20.sol';
 
 contract ClaimableERC20Test is Test {
 	ClaimableERC20 public token;
@@ -16,17 +16,17 @@ contract ClaimableERC20Test is Test {
 	
 	function setUp() public {
 		vm.prank(deployer);
-		token = new ClaimableERC20("Claimable Token", "CLM", DECIMALS, CLAIM_AMOUNT);
-		vm.label(deployer, "Deployer");
-		vm.label(alice, "Alice");
-		vm.label(bob, "Bob");
+		token = new ClaimableERC20('Claimable Token', 'CLM', DECIMALS, CLAIM_AMOUNT, 1 hours);
+		vm.label(deployer, 'Deployer');
+		vm.label(alice, 'Alice');
+		vm.label(bob, 'Bob');
 	}
 	
 	function testInitialState() public {
-		assertEq(token.name(), "Claimable Token");
-		assertEq(token.symbol(), "CLM");
+		assertEq(token.name(), 'Claimable Token');
+		assertEq(token.symbol(), 'CLM');
 		assertEq(token.decimals(), DECIMALS);
-		assertEq(token.CLAIM_AMOUNT(), CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.claimAmount(), CLAIM_AMOUNT * 10**DECIMALS);
 		assertEq(token.balanceOf(deployer), INITIAL_MINT_AMOUNT * 10**DECIMALS);
 	}
 	
@@ -53,7 +53,7 @@ contract ClaimableERC20Test is Test {
 		vm.startPrank(alice);
 		
 		token.claim();
-		vm.expectRevert("Claim period has not elapsed");
+		vm.expectRevert('Claim period has not elapsed');
 		token.claim();
 		
 		vm.stopPrank();
