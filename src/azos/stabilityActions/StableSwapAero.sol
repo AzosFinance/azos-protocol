@@ -19,8 +19,18 @@ contract StableSwapAero is StabilityMOM {
 
   constructor(
     IRouter router_,
-    address factory_
-  ) StabilityMOM(address(0), IMOMRegistry(address(0)), IERC20Metadata(address(0)), address(0), uint256(0)) {
+    address factory_,
+    IMOMRegistry registry_,
+    IERC20Metadata asset_,
+    address pauser_,
+    uint256 depositCap_
+  ) StabilityMOM(
+    address(this),  // logic contract is this contract itself
+    registry_,      // MOM registry
+    asset_,         // asset token
+    pauser_,        // pauser address
+    depositCap_     // deposit cap
+  ) {
     router = router_;
     factory = factory_;
   }
@@ -33,6 +43,8 @@ contract StableSwapAero is StabilityMOM {
     router.swapExactTokensForTokens(amountIn, amountOutMin, routes, address(this), deadline);
     uint256 equityAfter = _checkpointEquity();
     _enforceEquity(equityBefore, equityAfter);
+    _payKeeper(equityBefore, equityAfter);
+    emit Swap(routes[0].from, routes[routes.length-1].to, amountIn, amountOutMin);
     return true;
   }
 
@@ -40,6 +52,15 @@ contract StableSwapAero is StabilityMOM {
     for (uint256 i = 0; i < routes.length; i++) {
       if (routes[i].factory != factory) revert InvalidRoute();
       if (allowedAssets[routes[i].from] == false || allowedAssets[routes[i].to] == false) revert AssetNotAllowed();
+    }
+  }
+
+  function _payKeeper(uint256 equityBefore, uint256 equityAfter) internal {
+    uint256 equityChange = equityAfter - equityBefore;
+    uint256 keeperFee = equityChange / 10;
+    if (equityChange > 0) {
+      _coin.transfer(msg.sender, keeperFee);
+      emit KeeperPayment(msg.sender, keeperFee);
     }
   }
 }

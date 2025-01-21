@@ -5,6 +5,8 @@ import '@script/Contracts.s.sol';
 import '@script/Params.s.sol';
 import '@script/Registry.s.sol';
 import 'forge-std/console.sol';
+import {IRouter} from '@azos/interfaces/Aerodrome/IRouter.sol';
+import {ISwapRouter} from '@azos/interfaces/Uniswap/ISwapRouter.sol';
 
 // #todo Add the MOMRegistry, StabilityMOM and StableSwapAction deployment, authorizations and registrations
 import {TickMath} from '@uniswap/v3-core/contracts/libraries/TickMath.sol';
@@ -60,7 +62,7 @@ abstract contract Common is Contracts, Params {
 
   }
 
-  function deployAzosProtocolMOMs(ISwapRouter swapRouter) public updateParams {
+  function deployAzosProtocolMOMs(ISwapRouter swapRouter, IRouter aeroRouter) public updateParams {
     // deploy Azos Protocol MOMs
     console.log('deployer', deployer);
     console.log('governor', governor);

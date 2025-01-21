@@ -67,6 +67,7 @@ import {IUniswapV3Pool} from '@uniswap/v3-core/contracts/interfaces/IUniswapV3Po
 import {IModifiable} from '@interfaces/utils/IModifiable.sol';
 import {IAuthorizable} from '@interfaces/utils/IAuthorizable.sol';
 import {ISwapRouter} from '@azos/interfaces/Uniswap/ISwapRouter.sol';
+import {IRouter} from '@azos/interfaces/Aerodrome/IRouter.sol';
 
 // --- Proxy Contracts ---
 import {BasicActions, CommonActions} from '@contracts/proxies/actions/BasicActions.sol';

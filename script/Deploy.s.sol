@@ -65,7 +65,7 @@ abstract contract Deploy is Common, Script {
     // deployTokenDistributor();
 
     // Deploy Azos Protocol MOMs
-    deployAzosProtocolMOMs(SWAP_ROUTER);
+    deployAzosProtocolMOMs(SWAP_ROUTER, AERO_ROUTER);
 
     if (delegate == address(0)) {
       _revokeDeployerToAll(governor);
