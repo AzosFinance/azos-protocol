@@ -27,14 +27,10 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
   
   /// @notice The MultiClaimer contract address
   address public multiClaimer;
-  
-  /// @notice Mapping of user addresses to their chosen delegates
-  mapping(address => address) public delegates;
 
   event ClaimPeriodUpdated(uint256 newPeriod);
   event ClaimAmountUpdated(uint256 newAmount);
   event MultiClaimerUpdated(address newMultiClaimer);
-  event DelegateChanged(address indexed delegator, address indexed fromDelegate, address indexed toDelegate);
   
   /**
    * @param  _name The name of the ERC20 token
@@ -55,7 +51,7 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
     claimPeriod = _claimPeriod;
     
     // Mint 2 million tokens to the contract creator
-    _mint(msg.sender, INITIAL_MINT_AMOUNT * 10**_decimals);
+    _mint(msg.sender, INITIAL_MINT_AMOUNT * 1 ether);
   }
 
   /**
@@ -73,10 +69,9 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
    * @param _newAmount New claim amount (before decimals)
    */
   function setClaimAmount(uint256 _newAmount) external onlyOwner {
-    uint256 adjustedAmount = _newAmount;
-    require(adjustedAmount > 0, 'Claim amount must be greater than 0');
-    claimAmount = adjustedAmount;
-    emit ClaimAmountUpdated(adjustedAmount);
+    require(_newAmount > 0, 'Claim amount must be greater than 0');
+    claimAmount = _newAmount;
+    emit ClaimAmountUpdated(_newAmount);
   }
 
   /// @inheritdoc IERC20Metadata
@@ -101,7 +96,7 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
    * @return Whether the user can claim tokens
    */
   function canClaim(address _user) public view returns (bool) {
-    return block.timestamp >= lastClaimTimestamp[_user] + claimPeriod;
+    return block.timestamp >= lastClaimTimestamp[_user] + claimPeriod || lastClaimTimestamp[_user] == 0;
   }
   
   /**
@@ -139,24 +134,5 @@ contract ClaimableERC20 is IERC20Metadata, ERC20, Ownable {
   modifier onlyMultiClaimer() {
     require(msg.sender == multiClaimer, 'Only MultiClaimer can call');
     _;
-  }
-
-  /**
-   * @notice Delegate voting power to another address
-   * @param delegatee The address to delegate voting power to
-   */
-  function delegate(address delegatee) external {
-    address oldDelegate = delegates[msg.sender];
-    delegates[msg.sender] = delegatee;
-    emit DelegateChanged(msg.sender, oldDelegate, delegatee);
-  }
-
-  /**
-   * @notice Get the current delegate for an account
-   * @param account The address to get the delegate for
-   * @return The address of the current delegate
-   */
-  function getCurrentDelegate(address account) external view returns (address) {
-    return delegates[account];
   }
 }

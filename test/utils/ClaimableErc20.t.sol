@@ -10,13 +10,13 @@ contract ClaimableERC20Test is Test {
 	address public alice = address(0x2);
 	address public bob = address(0x3);
 	uint8 public constant DECIMALS = 18;
-	uint256 public constant CLAIM_AMOUNT = 10;
+	uint256 public constant CLAIM_AMOUNT = 10 ether;
 	uint256 public constant CLAIM_PERIOD = 13 hours;
-	uint256 public constant INITIAL_MINT_AMOUNT = 2_000_000;
+	uint256 public constant INITIAL_MINT_AMOUNT = 2_000_000 ether;
 	
 	function setUp() public {
 		vm.prank(deployer);
-		token = new ClaimableERC20('Claimable Token', 'CLM', DECIMALS, CLAIM_AMOUNT, 1 hours);
+		token = new ClaimableERC20('Claimable Token', 'CLM', DECIMALS, CLAIM_AMOUNT, CLAIM_PERIOD);
 		vm.label(deployer, 'Deployer');
 		vm.label(alice, 'Alice');
 		vm.label(bob, 'Bob');
@@ -26,13 +26,14 @@ contract ClaimableERC20Test is Test {
 		assertEq(token.name(), 'Claimable Token');
 		assertEq(token.symbol(), 'CLM');
 		assertEq(token.decimals(), DECIMALS);
-		assertEq(token.claimAmount(), CLAIM_AMOUNT * 10**DECIMALS);
-		assertEq(token.balanceOf(deployer), INITIAL_MINT_AMOUNT * 10**DECIMALS);
+		assertEq(token.claimAmount(), CLAIM_AMOUNT);
+		assertEq(token.claimPeriod(), CLAIM_PERIOD);
+		assertEq(token.balanceOf(deployer), INITIAL_MINT_AMOUNT);
 	}
 	
 	function testInitialMint() public {
-		assertEq(token.balanceOf(deployer), INITIAL_MINT_AMOUNT * 10**DECIMALS);
-		assertEq(token.totalSupply(), INITIAL_MINT_AMOUNT * 10**DECIMALS);
+		assertEq(token.balanceOf(deployer), INITIAL_MINT_AMOUNT);
+		assertEq(token.totalSupply(), INITIAL_MINT_AMOUNT);
 	}
 	
 	function testCanClaimInitially() public {
@@ -44,15 +45,16 @@ contract ClaimableERC20Test is Test {
 		vm.prank(alice);
 		token.claim();
 		
-		assertEq(token.balanceOf(alice), CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.balanceOf(alice), CLAIM_AMOUNT);
 		assertEq(token.lastClaimTimestamp(alice), block.timestamp);
-		assertEq(token.totalSupply(), (INITIAL_MINT_AMOUNT + CLAIM_AMOUNT) * 10**DECIMALS);
+		assertEq(token.totalSupply(), (INITIAL_MINT_AMOUNT + CLAIM_AMOUNT));
 	}
 	
 	function testCannotClaimTwice() public {
 		vm.startPrank(alice);
 		
 		token.claim();
+		assertFalse(token.canClaim(alice));
 		vm.expectRevert('Claim period has not elapsed');
 		token.claim();
 		
@@ -69,7 +71,7 @@ contract ClaimableERC20Test is Test {
 		assertTrue(token.canClaim(alice));
 		token.claim();
 		
-		assertEq(token.balanceOf(alice), 2 * CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.balanceOf(alice), 2 * CLAIM_AMOUNT);
 		
 		vm.stopPrank();
 	}
@@ -96,16 +98,16 @@ contract ClaimableERC20Test is Test {
 		vm.prank(bob);
 		token.claim();
 		
-		assertEq(token.balanceOf(alice), CLAIM_AMOUNT * 10**DECIMALS);
-		assertEq(token.balanceOf(bob), CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.balanceOf(alice), CLAIM_AMOUNT);
+		assertEq(token.balanceOf(bob), CLAIM_AMOUNT);
 		
 		vm.warp(block.timestamp + CLAIM_PERIOD);
 		
 		vm.prank(alice);
 		token.claim();
 		
-		assertEq(token.balanceOf(alice), 2 * CLAIM_AMOUNT * 10**DECIMALS);
-		assertEq(token.balanceOf(bob), CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.balanceOf(alice), 2 * CLAIM_AMOUNT);
+		assertEq(token.balanceOf(bob), CLAIM_AMOUNT);
 	}
 	
 	function testTotalSupplyAfterClaims() public {
@@ -117,6 +119,6 @@ contract ClaimableERC20Test is Test {
 		vm.prank(bob);
 		token.claim();
 		
-		assertEq(token.totalSupply(), initialSupply + 2 * CLAIM_AMOUNT * 10**DECIMALS);
+		assertEq(token.totalSupply(), initialSupply + 2 * CLAIM_AMOUNT);
 	}
 }
