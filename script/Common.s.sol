@@ -4,7 +4,7 @@ pragma solidity 0.8.20;
 import '@script/Contracts.s.sol';
 import '@script/Params.s.sol';
 import '@script/Registry.s.sol';
-import 'forge-std/console.sol';
+import {console} from 'forge-std/console.sol';
 import {IRouter} from '@azos/interfaces/Aerodrome/IRouter.sol';
 import {ISwapRouter} from '@azos/interfaces/Uniswap/ISwapRouter.sol';
 
@@ -63,20 +63,42 @@ abstract contract Common is Contracts, Params {
   }
 
   function deployAzosProtocolMOMs(ISwapRouter swapRouter, IRouter aeroRouter) public updateParams {
-    // deploy Azos Protocol MOMs
+    // Deploy MOMRegistry first
+    momRegistry = new MOMRegistry(
+        address(systemCoin),
+        address(protocolToken),
+        address(oracleRelayer),
+      deployer
+    );
+
+    // Deploy FertilityMOM
+    fertilityMOM = new FertilityMOM(
+        momRegistry,
+        collateral[USDGLO],  // This should be defined in your params
+        treasury,        // This should be defined in your params
+        deployer,        // Initial pauser
+        FERTILITY_MOM_DEPOSIT_CAP  // This should be defined in your params
+    );
+
+    // Setup authorizations
+    systemCoin.addAuthorization(address(momRegistry));
+    protocolToken.addAuthorization(address(momRegistry));
+
+    // Register FertilityMOM in registry
+    momRegistry.registerMOM(
+        address(fertilityMOM),
+        15_000_000 ether,  // maxDeposit
+        15_000_000 ether,  // maxRepay
+        true                // isActive
+    );
+
+    // Deploy other MOMs...
     console.log('deployer', deployer);
     console.log('governor', governor);
     console.log('oracleRelayer', address(oracleRelayer));
     console.log('systemCoin', address(systemCoin));
     console.log('protocolToken', address(protocolToken));
 
-    momRegistry = new MOMRegistry(
-        address(systemCoin), 
-        address(protocolToken), 
-        address(oracleRelayer), 
-        deployer
-    );
-    
     stableSwapUniV3 = new StableSwapUniV3(
         swapRouter,           // router
         momRegistry,          // registry
@@ -189,16 +211,20 @@ abstract contract Common is Contracts, Params {
   function deployCollateralContracts(bytes32 _cType) public updateParams {
     // deploy CollateralJoin and CollateralAuctionHouse
     address _delegatee = delegatee[_cType];
-    if (_delegatee == address(0)) {
-      collateralJoin[_cType] =
-        collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
-    } else {
-      collateralJoin[_cType] = collateralJoinFactory.deployDelegatableCollateralJoin({
-        _cType: _cType,
-        _collateral: address(collateral[_cType]),
-        _delegatee: _delegatee
-      });
-    }
+    // if (_delegatee == address(0)) {
+      // collateralJoin[_cType] =
+      //   collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
+    // } else {
+    //   collateralJoin[_cType] = collateralJoinFactory.deployDelegatableCollateralJoin({
+    //     _cType: _cType,
+    //     _collateral: address(collateral[_cType]),
+    //     _delegatee: _delegatee
+    //   });
+    // }
+
+    // #todo figure out why delegateee is not working
+    collateralJoin[_cType] = collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
+
 
     collateralAuctionHouseFactory.initializeCollateralType(_cType, abi.encode(_collateralAuctionHouseParams[_cType]));
     collateralAuctionHouse[_cType] =

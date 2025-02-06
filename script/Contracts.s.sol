@@ -91,6 +91,8 @@ import {AzosDelegatee} from '@contracts/governance/AzosDelegatee.sol';
 import {MOMRegistry} from '@azos/MOMRegistry.sol';
 import {StabilityMOM} from '@azos/StabilityMOM.sol';
 import {StableSwapUniV3} from '@azos/stabilityActions/StableSwapUniV3.sol';
+import {StableSwapAero} from '@azos/stabilityActions/StableSwapAero.sol';
+import {FertilityMOM} from '@azos/FertilityMOM.sol';
 /**
  * @title  Contracts
  * @notice This contract initializes all the contracts, so that they're inherited and available throughout scripts scopes.
@@ -170,5 +172,8 @@ abstract contract Contracts {
   // --- Azos Protocol MOMs ---
   MOMRegistry public momRegistry;
   StabilityMOM public stabilityMOM;
+  StabilityMOM public aeroMOM;
   StableSwapUniV3 public stableSwapUniV3;
+  StableSwapAero public stableSwapAero;
+  FertilityMOM public fertilityMOM;
 }

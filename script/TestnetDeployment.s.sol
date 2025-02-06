@@ -7,8 +7,8 @@ import {OP_WETH, OP_OPTIMISM} from '@script/Registry.s.sol';
 import {DIARelayerV2} from '@contracts/oracles/DIARelayerV2.sol';
 
 abstract contract TestnetDeployment is Contracts, TestnetParams {
-  // NOTE: The last significant change in the Testnet deployment, to be used in the test scenarios
-  uint256 constant SEPOLIA_DEPLOYMENT_BLOCK = 14_646_568;
+  // NOTE: The last significant change in the Testnet deployment
+  uint256 constant SEPOLIA_DEPLOYMENT_BLOCK = 20922409;
 
   /**
    * @notice All the addresses that were deployed in the Testnet deployment, in order of creation
@@ -23,31 +23,38 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralTypes.push(USDGLO);
     collateralTypes.push(CHAR);
 
+    delegatee[GTC_ETH] = address(0);
+    delegatee[KLIMA] = address(0);
+    delegatee[CELO] = address(0);
+    delegatee[USDGLO] = address(0);
+    delegatee[CHAR] = address(0);
+
     // --- ERC20s ---
     // #todo change our collateral assignments
-    collateral[GTC_ETH] = IERC20Metadata(address(2));
-    collateral[KLIMA] = IERC20Metadata(address(1));
-    collateral[CELO] = IERC20Metadata(0xE6ff79DfcE1AC82AB0f420feabef7fA0B6113913);
-    collateral[USDGLO] = IERC20Metadata(0x0976e648859425757142856303760c76d5fA3742);
-    collateral[CHAR] = IERC20Metadata(0x32d1e9Edb0f5332c6A7B7aa2C50134270DB618E6);
+    collateral[GTC_ETH] = new ClaimableERC20('GTC ETH LP', 'GTC-ETH', 18);
+    collateral[KLIMA] = new ClaimableERC20('Klima DAO', 'KLIMA', 18);
+    collateral[CELO] = new ClaimableERC20('Celo', 'CELO', 18);
+    collateral[USDGLO] = new ClaimableERC20('USD Globe', 'USDGLO', 18);
+    collateral[CHAR] = new ClaimableERC20('BioChar', 'CHAR', 18);
 
-    systemCoin = SystemCoin(0xbcfEeAfb457854b69b428E3aD773Cfa632B34CBB);
-    protocolToken = ProtocolToken(0x20e16208900aAcF61060583ee627078beF7aE4Cf);
 
-    safeEngine = SAFEEngine(0xEbA0bB5dc4E7404d04E93f5D0bb3eCc9E62FEe3B);
-    oracleRelayer = OracleRelayer(0x3191d2F4203EA6435ec7beB853Bb99E1C66b08FE);
-    surplusAuctionHouse = SurplusAuctionHouse(0x9a1D951C2afce7788b4dB0245492d20F3a417BD5);
-    debtAuctionHouse = DebtAuctionHouse(0xcA71B40BEca54d0EE2cAf0E9Ca7B8b539B2D43ff);
-    accountingEngine = AccountingEngine(0x90BC9f1b6885F5D55CA24f6DBC25665575d8230a);
-    liquidationEngine = LiquidationEngine(0xCB2F8FECEAA0E32ad328f99e2B1A568a612BD9E1);
-    coinJoin = CoinJoin(0x95162301B89dA409EBd68398fde0096a9B4a0f13);
-    taxCollector = TaxCollector(0x843fa2A6393b1177df5BC1d31CFEF4cB85E7553e);
-    stabilityFeeTreasury = StabilityFeeTreasury(0xA06fc6E6c51473b698A9334A32186629E92761a3);
+    systemCoin = SystemCoin(0xd73899cd6b799b188fb1b4d051da16e8885ec6c0);
+    protocolToken = ProtocolToken(0xb011a9514b5b7cb51a6ed9b85311ea3639f573ae);
+
+    safeEngine = SAFEEngine(0x7a339D2b14c7eEeC82740e4a7906f6b160036b22);
+    oracleRelayer = OracleRelayer(0x36d8d7ad66f51ac2F10FFDF9D46a7e99287b8C3e);
+    surplusAuctionHouse = SurplusAuctionHouse(0xc1dA6c17F1a4933e6048BB8de2D9Bac132C0DA55);
+    debtAuctionHouse = DebtAuctionHouse(0xfdb4e3Db4aBc4A33bd70d6A7EF1F00eA4F4E95C4);
+    accountingEngine = AccountingEngine(0x998CBe4bC59cA67F844E6aa1Cc9834Bb271E0C1e);
+    liquidationEngine = LiquidationEngine(0x6028828e1871fb688597f531A0f2786ec9Cb9dec);
+    coinJoin = CoinJoin(0xfa42d729816c72edb495eeea4fe0bd9f2dda9a9d);
+    taxCollector = TaxCollector(0xac84da68a0230678b41305aa679b5db3460bd0ec);
+    stabilityFeeTreasury = StabilityFeeTreasury(0x97051f334fedeb80708ad197c0364534df0f916e);
 
     pidController = PIDController(0xD5d7dBEDD80449E2bf557FC354A7CF62cFb07d2e);
     pidRateSetter = PIDRateSetter(0x7a6d6035d7e3509D6dc54B49621050A91Dd6B86C);
 
-    globalSettlement = GlobalSettlement(0xF206f53D66dcDD22Eea80a7A3Bd3F48651284aCa);
+    globalSettlement = GlobalSettlement(0x99917c63d94069e255f4e8b43697ba7c89d2cb58);
     postSettlementSurplusAuctionHouse = PostSettlementSurplusAuctionHouse(0xA17afb06B80eFcF600E0573110713C5069C727c7);
     settlementSurplusAuctioneer = SettlementSurplusAuctioneer(0x8b744081b77CE8F5396401936Ed1Ae8224ea897e);
 
@@ -64,8 +71,8 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     collateralJoin[GTC_ETH] = CollateralJoin(0x0CC62FF2582485a71b5d556F454D0cEA167d9520);
     collateralAuctionHouse[GTC_ETH] = CollateralAuctionHouse(0xD63373c3BC20F23386009e4aeac56F7f132E16aB);
 
-    collateralJoin[KLIMA] = CollateralJoin(0x2d57b9205957484839D830A38d7d7e1bd6d506F6); // ignore for subgraph testing
-    collateralAuctionHouse[KLIMA] = CollateralAuctionHouse(0x13d0d98a0e7973B034E12e239aD6BBc29E3d9Ec8); // ignore for subgraph testing
+    collateralJoin[KLIMA] = CollateralJoin(0x2d57b9205957484839D830A38d7d7e1bd6d506F6);
+    collateralAuctionHouse[KLIMA] = CollateralAuctionHouse(0x13d0d98a0e7973B034E12e239aD6BBc29E3d9Ec8);
 
     collateralJoin[CELO] = CollateralJoin(0x8b53AD3842FBe724971c5E9500149Ae2E45B42E0);
     collateralAuctionHouse[CELO] = CollateralAuctionHouse(0x8f789370D9cd98206D204Bf2bB90Af5219A08e39);
@@ -82,15 +89,15 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     oracleJob = OracleJob(0xa668C53a49d50B2d3a5691C20Bac21c6F6dfaa23);
 
     // --- proxies ---
-    proxyFactory = AzosProxyFactory(0xDd19D0Bf1AF992A811303d9bBC32544ae058a95e);
-    safeManager = AzosSafeManager(0x5F697158D6B9A06ad048b43C44D5c611eD179960);
+    proxyFactory = AzosProxyFactory(0xb202c36501a3cee3d4d686e076a7b5dd2cf472d0);
+    safeManager = AzosSafeManager(0x8e6cfdfc5574e48966a5f1f595a8e96a3b9db820);
 
-    basicActions = BasicActions(0xE55f91f49fa3103EF9a3d931bF898bA4eA1Eab17);
-    debtBidActions = DebtBidActions(0xAc6f08c2208612260911C0B05Cdf07C1436D2268);
-    surplusBidActions = SurplusBidActions(0xf50381476f3d572A7C2d741A1C34d5f74a7c14F7);
+    basicActions = BasicActions(0x3e3015fa438b7c9efa51f0af8d1c71035d24f0f0);
+    debtBidActions = DebtBidActions(0xe2ceab5b999b21f0171862dae333f205c24185be);
+    surplusBidActions = SurplusBidActions(0x3bb2940cb32e0528cfeb6cf56eda8a9d18e35e67);
     collateralBidActions = CollateralBidActions(0x94049905c4dd088F053defc0Eb63E95328fB1E9d);
     postSettlementSurplusBidActions = PostSettlementSurplusBidActions(0x7C5335895cbd3aC96Ae6C80332f6297e370D56ad);
-    globalSettlementActions = GlobalSettlementActions(0xeB3bbDe482a314fCBae878d94694fa08281ABFea);
+    globalSettlementActions = GlobalSettlementActions(0x752588F0d92aB7EC9Cf036630394819e26b320AD);
     rewardedActions = RewardedActions(0x5A4faBf474b572cD4189B03cE97235FC4d4636e6);
 
     // --- oracles ---
@@ -103,9 +110,9 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
     delayedOracle[CHAR] = IDelayedOracle(0x34a6405d42BFc95799CA8CC7b9037Ea618457998);
 
     // --- governance ---
-    azosGovernor = AzosGovernor(payable(0xAf04b922Ba9762B1de61334d3d1cfDf0c1A3DcB0));
-    timelock = TimelockController(payable(0x77B522Ac7bd1Feeb1783199Dc753784a4C51634e));
-    azosDelegatee = AzosDelegatee(0x50649bcA8f69eaF28a0563c688F71a4ee1666264);
+    azosGovernor = AzosGovernor(payable(0x0d98ec32cb06323f909a32ce7289420435d0215a));
+    timelock = TimelockController(payable(0xd43c22aA8F55e4F77460F8De1fDffc54e6e167a1));
+    azosDelegatee = AzosDelegatee(0xc1d0f313dcec0679b2c3c8d53ac2f741f83e3712);
 
     tokenDistributor = TokenDistributor(0x5684Ea6cf4A323F410a1Eb25B4A6ec8D8a93Cf24); // ignore for subgraph testing
 

@@ -7,11 +7,10 @@ abstract contract TestnetParams is Contracts, Params {
   // --- Testnet Params ---
   uint256 constant BASE_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
   // #todo setup an admin safe on Base and change this address
-  address constant BASE_SEPOLIA_ADMIN_SAFE = 0x121Bd4d3DEAb4C5591D70e5898D16fa6cb5D8F95;
+  address constant BASE_SEPOLIA_ADMIN_SAFE = 0x372ED992a8b655b43EC00115318347BD2Cb4591F;
 
   function _getEnvironmentParams() internal override {
     // Setup delegated collateral joins
-    delegatee[KLIMA] = address(azosDelegatee); // Base Sepolia Uniswap V3 Swap Router
 
     _safeEngineParams = ISAFEEngine.SAFEEngineParams({
       safeDebtCeiling: 2_000_000 * WAD, // WAD
@@ -186,5 +185,8 @@ abstract contract TestnetParams is Contracts, Params {
       claimPeriodStart: block.timestamp + 1 days,
       claimPeriodEnd: 1_735_689_599 // 1/1/2025 (GMT+0) - 1s
     });
+
+    // --- FertilityMOM Params ---
+    treasury = BASE_SEPOLIA_ADMIN_SAFE;
   }
 }

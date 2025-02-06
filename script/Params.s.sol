@@ -150,6 +150,11 @@ abstract contract Params {
   // --- Governor params ---
   IAzosGovernor.AzosGovernorParams _governorParams;
   ITokenDistributor.TokenDistributorParams _tokenDistributorParams;
+
+  // FertilityMOM params
+  address public stabilityToken;
+  address public treasury;
+  uint256 public constant FERTILITY_MOM_DEPOSIT_CAP = 1_000_000 * WAD; // 1M deposit cap
 }
 
 /**
