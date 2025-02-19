@@ -115,28 +115,27 @@ abstract contract TestnetParams is Contracts, Params {
     });
 
     // --- Collateral Default Params ---
-    // #todo check if collateralTypes has only our desired collaterals
-    for (uint256 _i; _i < collateralTypes.length; _i++) {
+    for (uint256 _i = 0; _i < collateralTypes.length; _i++) {
       bytes32 _cType = collateralTypes[_i];
 
-      // if (_cType != USDGLO) {
-      _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
-        oracle: delayedOracle[_cType],
-        safetyCRatio: 1.5e27, // 150%
-        liquidationCRatio: 1.5e27 // 150%
-      });
-      // }
-      // else {
-      //   _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
-      //     oracle: delayedOracle[_cType],
-      //     safetyCRatio: 1.11e26, // 111%
-      //     liquidationCRatio: 1.11e26 // 111%
-      //   });
-      // }
+      if (_cType != USDGLO) {
+        _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
+          oracle: delayedOracle[_cType],
+          safetyCRatio: 1.5e27, // 150%
+          liquidationCRatio: 1.5e27 // 150%
+        });
+      } else {
+        _oracleRelayerCParams[_cType] = IOracleRelayer.OracleRelayerCollateralParams({
+          oracle: delayedOracle[_cType],
+          safetyCRatio: 1.11e27, // 111%
+          liquidationCRatio: 1.11e27 // 111%
+        });
+      }
 
       _taxCollectorCParams[_cType] = ITaxCollector.TaxCollectorCollateralParams({
         // NOTE: 42%/yr => 1.42^(1/yr) = 1 + 11,11926e-9
-        stabilityFee: RAY + 11.11926e18 // + 42%/yr
+        // NOTE: 5%/yr => 1.05^(1/yr) = 1 + 11,11926e-9
+        stabilityFee: RAY + 1.54713e18 // + 5%/yr
       });
 
       _safeEngineCParams[_cType] = ISAFEEngine.SAFEEngineCollateralParams({
@@ -146,27 +145,23 @@ abstract contract TestnetParams is Contracts, Params {
 
       _liquidationEngineCParams[_cType] = ILiquidationEngine.LiquidationEngineCollateralParams({
         collateralAuctionHouse: address(collateralAuctionHouse[_cType]),
-        liquidationPenalty: 1.1e18, // 10%
+        liquidationPenalty: 1.2e18, // 20%
         liquidationQuantity: 1000 * RAD // 1000 ZAI
       });
 
       _collateralAuctionHouseParams[_cType] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
         minimumBid: WAD, // 1 ZAI
         minDiscount: WAD, // no discount
-        maxDiscount: 0.9e18, // -10%
+        maxDiscount: 0.5e18, // -50%
         perSecondDiscountUpdateRate: MINUS_0_5_PERCENT_PER_HOUR // RAY
       });
     }
 
     // --- Collateral Specific Params ---
-    // #todo check the GTC_ETH params - I don't think we need these... these were special for pre-deployed tokens
     _oracleRelayerCParams[GTC_ETH].safetyCRatio = 1.35e27; // 135%
     _oracleRelayerCParams[GTC_ETH].liquidationCRatio = 1.35e27; // 135%
-    _taxCollectorCParams[GTC_ETH].stabilityFee = RAY + 1.54713e18; // + 5%/yr
     _safeEngineCParams[GTC_ETH].debtCeiling = 100_000_000 * RAD; // 100M ZAI
 
-    _liquidationEngineCParams[KLIMA].liquidationPenalty = 1.2e18; // 20%
-    _collateralAuctionHouseParams[KLIMA].maxDiscount = 0.5e18; // -50%
 
     // --- Governance Params ---
     _governorParams = IAzosGovernor.AzosGovernorParams({

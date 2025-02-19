@@ -38,3 +38,5 @@ src = 'test'
 [rpc_endpoints]
 mainnet = "${OP_MAINNET_RPC}"
 testnet = "${OP_SEPOLIA_RPC}"
+base_sepolia = "${BASE_SEPOLIA_RPC}"
+

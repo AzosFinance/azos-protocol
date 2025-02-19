@@ -211,20 +211,16 @@ abstract contract Common is Contracts, Params {
   function deployCollateralContracts(bytes32 _cType) public updateParams {
     // deploy CollateralJoin and CollateralAuctionHouse
     address _delegatee = delegatee[_cType];
-    // if (_delegatee == address(0)) {
-      // collateralJoin[_cType] =
-      //   collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
-    // } else {
-    //   collateralJoin[_cType] = collateralJoinFactory.deployDelegatableCollateralJoin({
-    //     _cType: _cType,
-    //     _collateral: address(collateral[_cType]),
-    //     _delegatee: _delegatee
-    //   });
-    // }
-
-    // #todo figure out why delegateee is not working
-    collateralJoin[_cType] = collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
-
+    if (_delegatee == address(0)) {
+      collateralJoin[_cType] =
+        collateralJoinFactory.deployCollateralJoin({_cType: _cType, _collateral: address(collateral[_cType])});
+    } else {
+      collateralJoin[_cType] = collateralJoinFactory.deployDelegatableCollateralJoin({
+        _cType: _cType,
+        _collateral: address(collateral[_cType]),
+        _delegatee: _delegatee
+      });
+    }
 
     collateralAuctionHouseFactory.initializeCollateralType(_cType, abi.encode(_collateralAuctionHouseParams[_cType]));
     collateralAuctionHouse[_cType] =
