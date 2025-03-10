@@ -11,9 +11,9 @@ import {
   OP,
   WBTC,
   STONES,
-  ZAI_POOL_FEE_TIER,
-  ZAI_POOL_OBSERVATION_CARDINALITY,
-  ZAI_ETH_INITIAL_TICK
+  AZUSD_POOL_FEE_TIER,
+  AZUSD_POOL_OBSERVATION_CARDINALITY,
+  AZUSD_ETH_INITIAL_TICK
 } from '@script/Params.s.sol';
 import {UNISWAP_V3_FACTORY, OP_OPTIMISM, OP_CHAINLINK_ETH_USD_FEED} from '@script/Registry.s.sol';
 import {ERC20Votes} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol';
@@ -513,23 +513,23 @@ contract E2EDeploymentMainnetTest is DeployMainnet, CommonDeploymentTest {
     super.setUp();
     run();
 
-    // Initialize ZAI/WETH UniV3 pool (already deployed in _setupPostEnvironment)
+    // Initialize AZUSD/WETH UniV3 pool (already deployed in _setupPostEnvironment)
     _deployUniV3Pool(
       UNISWAP_V3_FACTORY,
       address(collateral[WETH]),
       address(systemCoin),
-      ZAI_POOL_FEE_TIER,
-      ZAI_POOL_OBSERVATION_CARDINALITY,
-      ZAI_ETH_INITIAL_TICK // 2000 ZAI = 1 ETH
+      AZUSD_POOL_FEE_TIER,
+      AZUSD_POOL_OBSERVATION_CARDINALITY,
+      AZUSD_ETH_INITIAL_TICK // 2000 AZUSD = 1 ETH
     );
 
-    // NOTE: setup [ UniV3 ZAI/WETH + Chainlink ETH/USD ] oracle through governance actions
+    // NOTE: setup [ UniV3 AZUSD/WETH + Chainlink ETH/USD ] oracle through governance actions
     vm.startPrank(governor);
     // grab the last denominated oracle deployed (in _setupPostEnvironment)
     address[] memory _denominatedOracles = denominatedOracleFactory.denominatedOraclesList();
     systemCoinOracle = IBaseOracle(_denominatedOracles[_denominatedOracles.length - 1]);
     // assert we grabbed the correct oracle
-    assertEq(systemCoinOracle.symbol(), '(ZAI / WETH) * (ETH / USD)');
+    assertEq(systemCoinOracle.symbol(), '(AZUSD / WETH) * (ETH / USD)');
 
     oracleRelayer.modifyParameters('systemCoinOracle', abi.encode(systemCoinOracle));
 
@@ -571,10 +571,10 @@ contract E2EDeploymentMainnetTest is DeployMainnet, CommonDeploymentTest {
     vm.warp(block.timestamp + 1 days);
     (uint256 _quote,) = systemCoinOracle.getResultWithValidity();
 
-    assertEq(systemCoinOracle.symbol(), '(ZAI / WETH) * (ETH / USD)');
+    assertEq(systemCoinOracle.symbol(), '(AZUSD / WETH) * (ETH / USD)');
 
     // NOTE: Temporarily disabled
-    // assertEq(_quote > 1e18 ? _quote / 1e17 : 1e19 / _quote, 10); // 1.0 ZAI = 1.0 USD
+    // assertEq(_quote > 1e18 ? _quote / 1e17 : 1e19 / _quote, 10); // 1.0 AZUSD = 1.0 USD
   }
 
   function _refreshChainlinkFeed(address _chainlinkFeed, uint256 _quote) internal {

@@ -5,7 +5,7 @@ import '@script/Params.s.sol';
 
 abstract contract TestnetParams is Contracts, Params {
   // --- Testnet Params ---
-  uint256 constant BASE_SEPOLIA_ZAI_PRICE_DEVIATION = 0.995e18; // -0.5%
+  uint256 constant BASE_SEPOLIA_AZUSD_PRICE_DEVIATION = 0.995e18; // -0.5%
   // #todo setup an admin safe on Base and change this address
   address constant BASE_SEPOLIA_ADMIN_SAFE = 0x372ED992a8b655b43EC00115318347BD2Cb4591F;
 
@@ -23,10 +23,10 @@ abstract contract TestnetParams is Contracts, Params {
       surplusDelay: 1 days,
       popDebtDelay: 0,
       disableCooldown: 3 days,
-      surplusAmount: 42_000 * RAD, // 42k ZAI
-      surplusBuffer: 1_000 * RAD, // 100k ZAI
+      surplusAmount: 42_000 * RAD, // 42k AZUSD
+      surplusBuffer: 1_000 * RAD, // 100k AZUSD
       debtAuctionMintedTokens: 10_000 * WAD, // 10k AZOS
-      debtAuctionBidSize: 1000 * RAD // 1k ZAI
+      debtAuctionBidSize: 1000 * RAD // 1k AZUSD
     });
 
     _debtAuctionHouseParams = IDebtAuctionHouse.DebtAuctionHouseParams({
@@ -45,12 +45,12 @@ abstract contract TestnetParams is Contracts, Params {
     });
 
     _liquidationEngineParams = ILiquidationEngine.LiquidationEngineParams({
-      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M ZAI
+      onAuctionSystemCoinLimit: 10_000_000 * RAD, // 10M AZUSD
       saviourGasLimit: 10_000_000 // 10M gas
     });
 
     _stabilityFeeTreasuryParams = IStabilityFeeTreasury.StabilityFeeTreasuryParams({
-      treasuryCapacity: 1_000_000 * RAD, // 1M ZAI
+      treasuryCapacity: 1_000_000 * RAD, // 1M AZUSD
       pullFundsMinThreshold: 0, // no threshold
       surplusTransferDelay: 1 days
     });
@@ -133,24 +133,24 @@ abstract contract TestnetParams is Contracts, Params {
       }
 
       _taxCollectorCParams[_cType] = ITaxCollector.TaxCollectorCollateralParams({
-        // NOTE: 42%/yr => 1.42^(1/yr) = 1 + 11,11926e-9
+        // NOTE: 42%/yr => 1.42^(1/yr) = 1 + 11,11926e-9 => RAY + 11.11926e18 
         // NOTE: 5%/yr => 1.05^(1/yr) = 1 + 11,11926e-9
         stabilityFee: RAY + 1.54713e18 // + 5%/yr
       });
 
       _safeEngineCParams[_cType] = ISAFEEngine.SAFEEngineCollateralParams({
-        debtCeiling: 10_000_000 * RAD, // 10M ZAI
-        debtFloor: 1 * RAD // 1 ZAI
+        debtCeiling: 10_000_000 * RAD, // 10M AZUSD
+        debtFloor: 1 * RAD // 1 AZUSD
       });
 
       _liquidationEngineCParams[_cType] = ILiquidationEngine.LiquidationEngineCollateralParams({
         collateralAuctionHouse: address(collateralAuctionHouse[_cType]),
         liquidationPenalty: 1.2e18, // 20%
-        liquidationQuantity: 1000 * RAD // 1000 ZAI
+        liquidationQuantity: 1000 * RAD // 1000 AZUSD
       });
 
       _collateralAuctionHouseParams[_cType] = ICollateralAuctionHouse.CollateralAuctionHouseParams({
-        minimumBid: WAD, // 1 ZAI
+        minimumBid: WAD, // 1 AZUSD
         minDiscount: WAD, // no discount
         maxDiscount: 0.5e18, // -50%
         perSecondDiscountUpdateRate: MINUS_0_5_PERCENT_PER_HOUR // RAY
@@ -160,7 +160,7 @@ abstract contract TestnetParams is Contracts, Params {
     // --- Collateral Specific Params ---
     _oracleRelayerCParams[GTC_ETH].safetyCRatio = 1.35e27; // 135%
     _oracleRelayerCParams[GTC_ETH].liquidationCRatio = 1.35e27; // 135%
-    _safeEngineCParams[GTC_ETH].debtCeiling = 100_000_000 * RAD; // 100M ZAI
+    _safeEngineCParams[GTC_ETH].debtCeiling = 100_000_000 * RAD; // 100M AZUSD
 
 
     // --- Governance Params ---
@@ -176,12 +176,15 @@ abstract contract TestnetParams is Contracts, Params {
     // #todo setup a testnet airdrop root
     _tokenDistributorParams = ITokenDistributor.TokenDistributorParams({
       root: 0x6fc714df6371f577a195c2bfc47da41aa0ea15bba2651df126f3713a232244be,
-      totalClaimable: 1_000_000 * WAD, // 1M ZAI
+      totalClaimable: 1_000_000 * WAD, // 1M AZUSD
       claimPeriodStart: block.timestamp + 1 days,
       claimPeriodEnd: 1_735_689_599 // 1/1/2025 (GMT+0) - 1s
     });
 
-    // --- FertilityMOM Params ---
+    // --- Superfluid Params ---
+    address constant BASE_SEPOLIA_SUPERFLUID_HOST = 0x4E583D9390082Bac95DF145B0750510feaE41Ca0;
+    
+    // Setup treasury with admin safe
     treasury = BASE_SEPOLIA_ADMIN_SAFE;
   }
 }

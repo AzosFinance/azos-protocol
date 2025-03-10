@@ -16,7 +16,7 @@ abstract contract Common is Contracts, Params {
   uint256 internal _governorPK;
 
   function deployTokens() public updateParams {
-    systemCoin = new SystemCoin('ZAI Impact Backed', 'ZAI');
+    systemCoin = new SystemCoin('AZUSD Impact Backed', 'AZUSD');
     protocolToken = new ProtocolToken('Azos Protocol', 'AZOS');
   }
 

@@ -31,7 +31,7 @@ contract StableSwapAeroTest is Test {
         mockFactory = address(0x3);
         
         // Deploy tokens
-        systemCoin = new SystemCoin('Zai Test', 'ZAI');
+        systemCoin = new SystemCoin('AZUSD Test', 'AZUSD');
         protocolToken = new ProtocolToken('Azos Test', 'AZOS');
         assetToken = new MockERC20('Asset Test', 'ASST', 18);
         

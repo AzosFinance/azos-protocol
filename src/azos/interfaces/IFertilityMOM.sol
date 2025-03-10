@@ -6,11 +6,11 @@ import {IMOMRegistry} from '@azos/interfaces/IMOMRegistry.sol';
 
 /**
  * @title IFertilityMOM Interface
- * @notice Interface for the FertilityMOM contract which handles deposits of stability tokens for ZAI
+ * @notice Interface for the FertilityMOM contract which handles deposits of stability tokens for AZUSD
  */
 interface IFertilityMOM {
     // --- Events ---
-    event Deposit(address indexed token, uint256 amount, uint256 zaiMinted, address indexed actor);
+    event Deposit(address indexed token, uint256 amount, uint256 AZUSDMinted, address indexed actor);
     event TreasuryWithdraw(address indexed token, uint256 amount, address indexed actor);
     event TreasuryUpdated(address indexed newTreasury, address indexed actor);
     event AllowedAssetsUpdated(address indexed asset, bool status, address indexed actor);
