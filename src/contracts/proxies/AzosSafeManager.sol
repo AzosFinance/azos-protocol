@@ -25,6 +25,8 @@ contract AzosSafeManager is IAzosSafeManager {
 
   /// @inheritdoc IAzosSafeManager
   address public safeEngine;
+  /// @inheritdoc IAzosSafeManager
+  address public superfluidHost;
 
   // --- Data ---
 
@@ -67,9 +69,11 @@ contract AzosSafeManager is IAzosSafeManager {
 
   /**
    * @param  _safeEngine Address of the SAFEEngine
+   * @param  _superfluidHost Address of the Superfluid host (or zero address to disable Super App functionality)
    */
-  constructor(address _safeEngine) {
+  constructor(address _safeEngine, address _superfluidHost) {
     safeEngine = _safeEngine.assertNonNull();
+    superfluidHost = _superfluidHost;
   }
 
   // --- Getters ---
@@ -124,7 +128,9 @@ contract AzosSafeManager is IAzosSafeManager {
     if (_usr == address(0)) revert ZeroAddress();
 
     ++_safeId;
-    address _safeHandler = address(new SAFEHandler(safeEngine));
+    
+    // Create SAFEHandler with Superfluid support if configured
+    address _safeHandler = address(new SAFEHandler(safeEngine, superfluidHost));
 
     _safeData[_safeId] =
       SAFEData({owner: _usr, pendingOwner: address(0), safeHandler: _safeHandler, collateralType: _cType});

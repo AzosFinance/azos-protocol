@@ -9,7 +9,7 @@ import {IERC20} from '@openzeppelin/contracts/token/ERC20/IERC20.sol';
 
 /**
  * @title FertilityMOM
- * @notice A MOM contract that allows users to deposit stability tokens in exchange for ZAI
+ * @notice A MOM contract that allows users to deposit stability tokens in exchange for AZUSD
  * @dev Inherits from MOM contract and implements deposit/burn functionality
  */
 contract FertilityMOM is MOM, IFertilityMOM {

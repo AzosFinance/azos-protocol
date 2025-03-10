@@ -13,7 +13,7 @@ import {IFertilityMOM} from '@azos/interfaces/IFertilityMOM.sol';
 
 contract FertilityMOMTest is Test {
     // --- Events to test ---
-    event Deposit(address indexed token, uint256 amount, uint256 zaiMinted, address indexed actor);
+    event Deposit(address indexed token, uint256 amount, uint256 AZUSDMinted, address indexed actor);
     event TreasuryWithdraw(address indexed token, uint256 amount, address indexed actor);
     event TreasuryUpdated(address indexed newTreasury, address indexed actor);
     event AllowedAssetsUpdated(address indexed asset, bool status, address indexed actor);
@@ -41,7 +41,7 @@ contract FertilityMOMTest is Test {
         user = makeAddr("user");
         
         // Deploy tokens
-        systemCoin = new SystemCoin('Zai Test', 'ZAI');
+        systemCoin = new SystemCoin('AZUSD Test', 'AZUSD');
         protocolToken = new ProtocolToken('Azos Test', 'AZOS');
         stabilityToken = new MockERC20('Stability Token', 'STAB', 18);
         

@@ -1,8 +1,12 @@
 @defi-wonderland/solidity-utils/=node_modules/@defi-wonderland/solidity-utils/solidity/
-@openzeppelin/=node_modules/@openzeppelin/
+@openzeppelin/contracts/=lib/openzeppelin-contracts/contracts/
 @uniswap/=node_modules/@uniswap/
 forge-std/=node_modules/forge-std/src/
 ds-test/=node_modules/ds-test/src/
+
+@superfluid-finance/=lib/superfluid-protocol-monorepo/packages/
+@superfluid/=lib/superfluid-protocol-monorepo/packages/ethereum-contracts/contracts/
+@superfluid-interfaces/=lib/superfluid-protocol-monorepo/packages/ethereum-contracts/contracts/interfaces/
 
 @contracts/=src/contracts/
 @interfaces/=src/interfaces/

@@ -4,6 +4,7 @@ pragma solidity 0.8.20;
 // #todo Add the MOMRegistry, StabilityMOM and StableSwapAction
 // --- Base Contracts ---
 import {SystemCoin, ISystemCoin} from '@contracts/tokens/SystemCoin.sol';
+import {SystemCoinSuperToken, ISystemCoinSuperToken} from '@contracts/superfluid/SystemCoinSuperToken.sol';
 import {ProtocolToken, IProtocolToken, ERC20Votes, Pausable} from '@contracts/tokens/ProtocolToken.sol';
 import {SAFEEngine, ISAFEEngine} from '@contracts/SAFEEngine.sol';
 import {TaxCollector, ITaxCollector} from '@contracts/TaxCollector.sol';

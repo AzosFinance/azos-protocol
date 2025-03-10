@@ -19,6 +19,7 @@
     "no-inline-assembly": "off",
     "quotes": ["error", "single"],
     "reason-string": "off",
+    "no-console": "off",
     "defi-wonderland/contract-data-order": "warn",
     "defi-wonderland/enum-name-camelcase": "warn",
     "defi-wonderland/immutable-name-snakecase": "warn",

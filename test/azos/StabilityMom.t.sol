@@ -27,7 +27,7 @@ contract StabilityMOMTest is Test {
 		pauser = address(0x1);
 		
 		// Deploy actual contracts
-		systemCoin = new SystemCoin("Zai Test", "ZAI");
+		systemCoin = new SystemCoin("AZUSD Test", "AZUSD");
 		protocolToken = new ProtocolToken("Azos Test", "AZOS");
 		assetToken = new MockERC20("Asset Test", "ASST", 18);
 		

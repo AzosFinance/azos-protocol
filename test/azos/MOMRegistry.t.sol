@@ -20,7 +20,7 @@ contract MOMRegistryTest is Test {
 		module2 = address(0x2);
 		
 		// Deploy actual contracts
-		systemCoin = new SystemCoin("Zai Test", "ZAI");
+		systemCoin = new SystemCoin("AZUSD Test", "AZUSD");
 		protocolToken = new ProtocolToken("Azos Test", "AZOS");
 		
 		// Deploy MOMRegistry

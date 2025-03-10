@@ -2,7 +2,7 @@
 pragma solidity 0.8.20;
 
 import {AzosTest} from '@test/utils/AzosTest.t.sol';
-import {ZAI, ZAI_USD_INITIAL_PRICE, WETH} from '@script/Params.s.sol';
+import {AZUSD, AZUSD_USD_INITIAL_PRICE, WETH} from '@script/Params.s.sol';
 import {Deploy} from '@script/Deploy.s.sol';
 import {TestParams, TKN, TEST_ETH_PRICE, TEST_TKN_PRICE} from '@test/e2e/TestParams.t.sol';
 import {ERC20ForTest} from '@test/mocks/ERC20ForTest.sol';
@@ -19,7 +19,7 @@ uint256 constant COLLATERAL_PRICE = 100e18;
 
 uint256 constant COLLAT = 1e18;
 uint256 constant DEBT = 500e18; // LVT 50%
-uint256 constant TEST_ETH_PRICE_DROP = 100e18; // 1 ETH = 100 ZAI
+uint256 constant TEST_ETH_PRICE_DROP = 100e18; // 1 ETH = 100 AZUSD
 
 /**
  * @title  DeployForTest
@@ -34,7 +34,7 @@ contract DeployForTest is TestParams, Deploy {
   function setupEnvironment() public virtual override updateParams {
     WETH9 _weth = WETH9(payable(0x4200000000000000000000000000000000000006));
 
-    systemCoinOracle = new OracleForTest(ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
+    systemCoinOracle = new OracleForTest(AZUSD_USD_INITIAL_PRICE); // 1 AZUSD = 1 USD
     delayedOracle[WETH] = new DelayedOracleForTest(TEST_ETH_PRICE, address(0)); // 1 ETH = 2000 USD
     delayedOracle[TKN] = new DelayedOracleForTest(TEST_TKN_PRICE, address(0)); // 1 TKN = 1 USD
 

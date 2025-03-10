@@ -29,14 +29,14 @@ import {WAD, RAY, RAD} from '@libraries/Math.sol';
 
 // --- Utils ---
 
-// ZAI Params
-bytes32 constant ZAI = bytes32('ZAI');
-uint256 constant ZAI_USD_INITIAL_PRICE = 1e18; // 1 ZAI = 1 USD
-uint256 constant ZAI_ETH_INITIAL_PRICE = 0.0005e18; // 2000 ZAI = 1 ETH
-int24 constant ZAI_ETH_INITIAL_TICK = 76_013; // ~2000 ZAI = 1 ETH
+// AZUSD Params
+bytes32 constant AZUSD = bytes32('AZUSD');
+uint256 constant AZUSD_USD_INITIAL_PRICE = 1e18; // 1 AZUSD = 1 USD
+uint256 constant AZUSD_ETH_INITIAL_PRICE = 0.0005e18; // 2000 AZUSD = 1 ETH
+int24 constant AZUSD_ETH_INITIAL_TICK = 76_013; // ~2000 AZUSD = 1 ETH
 
-uint24 constant ZAI_POOL_FEE_TIER = 3000; // 0.3 %
-uint16 constant ZAI_POOL_OBSERVATION_CARDINALITY = 5000; // Safest cardinality would be 43.2k (at 2s per block, 1d TWAP)
+uint24 constant AZUSD_POOL_FEE_TIER = 3000; // 0.3 %
+uint16 constant AZUSD_POOL_OBSERVATION_CARDINALITY = 5000; // Safest cardinality would be 43.2k (at 2s per block, 1d TWAP)
 
 // #todo setup a swap router for mainnet
 ISwapRouter constant SWAP_ROUTER = ISwapRouter(0x94cC0AaC535CCDB3C01d6787D6413C739ae12bc4); // Base Sepolia Uniswap V3 Swap Router
@@ -109,7 +109,7 @@ uint256 constant PROPORTIONAL_GAIN = 154_712_579_997;
 uint256 constant INTEGRAL_GAIN = 13_785;
 
 // Job Params
-uint256 constant JOB_REWARD = 1 * WAD; // 1 ZAI
+uint256 constant JOB_REWARD = 1 * WAD; // 1 AZUSD
 
 /**
  * @title Params

@@ -10,13 +10,18 @@ import {Common} from '@script/Common.s.sol';
 import {TestnetParams} from '@script/TestnetParams.s.sol';
 import {MainnetParams} from '@script/MainnetParams.s.sol';
 import {ClaimableERC20} from '../src/contracts/for-test/ClaimableERC20.sol';
-import {console2} from "forge-std/console2.sol";
+import {console2} from 'forge-std/console2.sol';
 import {MultiClaimer} from '../src/contracts/for-test/MultiClaimer.sol';
 import {DIARelayerV2} from '../src/contracts/oracles/DIARelayerV2.sol';
+import {SystemCoinSuperToken} from '../src/contracts/superfluid/SystemCoinSuperToken.sol';
+import {ISuperfluid} from '@superfluid-finance/ethereum-contracts/contracts/interfaces/superfluid/ISuperfluid.sol';
 
 abstract contract Deploy is Common, Script {
   function setupEnvironment() public virtual {}
   function setupPostEnvironment() public virtual {}
+
+  // Add SystemCoin SuperToken
+  SystemCoinSuperToken public systemCoinSuperToken;
 
   function logDeployment(string memory contractName, address contractAddress) internal view {
     // Convert to checksum address
@@ -46,6 +51,15 @@ abstract contract Deploy is Common, Script {
     
     delayedOracleFactory = new DelayedOracleFactory();
     logDeployment('DelayedOracleFactory', address(delayedOracleFactory));
+
+    // Add Superfluid integration if host address is set
+    if (address(BASE_SEPOLIA_SUPERFLUID_HOST) != address(0)) {
+      console2.log('\n=== Superfluid Integration ===');
+      // Deploy SystemCoin SuperToken (AZUSDx)
+      systemCoinSuperToken = new SystemCoinSuperToken(address(systemCoin));
+      systemCoinSuperToken.initialize('Super AZUSD', 'AZUSDx');
+      logDeployment('SystemCoinSuperToken (AZUSDx)', address(systemCoinSuperToken));
+    }
 
     console2.log('\n=== Oracle Contracts ===');
     // Setup oracle system
@@ -256,28 +270,28 @@ contract DeployMainnet is MainnetParams, Deploy {
     collateralTypes.push(OP);
 
     // NOTE: Deploying the PID Controller turned off until governance action
-    systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
+    systemCoinOracle = new HardcodedOracle('AZUSD / USD', AZUSD_USD_INITIAL_PRICE); // 1 AZUSD = 1 USD
   }
 
   function setupPostEnvironment() public virtual override updateParams {
-    // Deploy ZAI/WETH UniV3 pool (uninitialized)
+    // Deploy AZUSD/WETH UniV3 pool (uninitialized)
     IUniswapV3Factory(UNISWAP_V3_FACTORY).createPool({
       tokenA: address(systemCoin),
       tokenB: address(collateral[WETH]),
-      fee: ZAI_POOL_FEE_TIER
+      fee: AZUSD_POOL_FEE_TIER
     });
 
-    // Setup ZAI/WETH oracle feed
-    IBaseOracle _zaiWethOracle = uniV3RelayerFactory.deployUniV3Relayer({
+    // Setup AZUSD/WETH oracle feed
+    IBaseOracle _AZUSDWethOracle = uniV3RelayerFactory.deployUniV3Relayer({
       _baseToken: address(systemCoin),
       _quoteToken: address(collateral[WETH]),
-      _feeTier: ZAI_POOL_FEE_TIER,
+      _feeTier: AZUSD_POOL_FEE_TIER,
       _quotePeriod: 1 days
     });
 
-    // Setup ZAI/USD oracle feed
+    // Setup AZUSD/USD oracle feed
     denominatedOracleFactory.deployDenominatedOracle({
-      _priceSource: _zaiWethOracle,
+      _priceSource: _AZUSDWethOracle,
       _denominationPriceSource: delayedOracle[WETH].priceSource(),
       _inverted: false
     });
@@ -375,7 +389,7 @@ contract DeployTestnet is TestnetParams, Deploy {
     collateralTypes.push(USDGLO);
     collateralTypes.push(CELO);
 
-    systemCoinOracle = new HardcodedOracle('ZAI / USD', ZAI_USD_INITIAL_PRICE); // 1 ZAI = 1 USD
+    systemCoinOracle = new HardcodedOracle('AZUSD / USD', AZUSD_USD_INITIAL_PRICE); // 1 AZUSD = 1 USD
 
     // Setup oracle system with DIA Oracle V2
     address diaOracleV2 = 0x83b56E80e47698BBc0d97828C1d8b1D509Ab6B4b;
@@ -431,9 +445,9 @@ contract DeployTestnet is TestnetParams, Deploy {
   function setupPostEnvironment() public virtual override updateParams {
     // Setup deviated oracle
     systemCoinOracle = new DeviatedOracle({
-      _symbol: 'ZAI / USD',
+      _symbol: 'AZUSD / USD',
       _oracleRelayer: address(oracleRelayer),
-      _deviation: BASE_SEPOLIA_ZAI_PRICE_DEVIATION
+      _deviation: BASE_SEPOLIA_AZUSD_PRICE_DEVIATION
     });
 
     oracleRelayer.modifyParameters('systemCoinOracle', abi.encode(systemCoinOracle));

@@ -14,7 +14,7 @@ import {Authorizable} from '@contracts/utils/Authorizable.sol';
 import {IMOMRegistry} from '@azosinterfaces/IMOMRegistry.sol';
 import {IMOM} from '@azosinterfaces/IMOM.sol';
 import {IERC20Metadata} from '@openzeppelin/contracts/token/ERC20/extensions/IERC20Metadata.sol';
-import {Pausable} from '@openzeppelin/contracts/utils/Pausable.sol';
+import {Pausable} from '@openzeppelin/contracts/security/Pausable.sol';
 
 abstract contract MOM is Authorizable, IMOM, Pausable {
   // Implementations of MOM will rely heavily on delegatecall therefore do not alter the order of these variables

@@ -5,6 +5,7 @@ import '@script/Contracts.s.sol';
 import {TestnetParams, GTC_ETH, KLIMA, CELO, USDGLO, CHAR} from '@script/TestnetParams.s.sol';
 import {OP_WETH, OP_OPTIMISM} from '@script/Registry.s.sol';
 import {DIARelayerV2} from '@contracts/oracles/DIARelayerV2.sol';
+import {SystemCoinSuperToken} from '@contracts/superfluid/SystemCoinSuperToken.sol';
 
 abstract contract TestnetDeployment is Contracts, TestnetParams {
   // NOTE: The last significant change in the Testnet deployment
@@ -117,5 +118,9 @@ abstract contract TestnetDeployment is Contracts, TestnetParams {
 
     // --- utils ---
     governor = address(timelock);
+
+    // --- Superfluid Integration ---
+    // This will be populated after deployment
+    systemCoinSuperToken = SystemCoinSuperToken(address(0));
   }
 }

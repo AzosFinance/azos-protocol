@@ -7,8 +7,8 @@ import {ERC20} from '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 import {ERC20Permit, IERC20Permit} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Permit.sol';
 import {ERC20Votes} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Votes.sol';
 import {ERC20Pausable, Pausable} from '@openzeppelin/contracts/token/ERC20/extensions/ERC20Pausable.sol';
-import {Time} from '@openzeppelin/contracts/utils/types/Time.sol';
-import {Nonces} from '@openzeppelin/contracts/utils/Nonces.sol';
+import {Time} from '@openzeppelin/utils/types/Time.sol';
+import {Nonces} from '@openzeppelin/utils/Nonces.sol';
 
 import {Authorizable} from '@contracts/utils/Authorizable.sol';
 
