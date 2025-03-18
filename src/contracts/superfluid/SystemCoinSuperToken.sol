@@ -13,7 +13,7 @@ import {ISystemCoin} from '@interfaces/tokens/ISystemCoin.sol';
 contract SystemCoinSuperToken is SuperToken {
     /// @notice The underlying SystemCoin (AZUSD) token
     ISystemCoin public immutable SYSTEM_COIN;
-    
+
     /**
      * @notice Constructor for SystemCoinSuperToken
      * @param _systemCoin Address of the SystemCoin (AZUSD) token
